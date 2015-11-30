@@ -76,7 +76,7 @@ public class Rubiks {
 	*/
 	private static void master(Ibis ibis, Cube cube) {
 		
-		
+		/*
 		// cache used for cube objects. Doing new Cube() for every move
 		// overloads the garbage collector
 		CubeCache cache = new CubeCache(cube.getSize());
@@ -96,6 +96,20 @@ public class Rubiks {
 		System.out.println();
 		System.out.println("Solving cube possible in " + result + " ways of "
 			+ bound + " steps");
+			*/
+		// Create a receive port and enable connections.
+		try
+		{
+		ReceivePort receiver = ibis.createReceivePort(portType, "master");
+		receiver.enableConnections();
+		// Read the message.
+		ReadMessage r = receiver.receive();
+		String s = r.readString();
+		r.finish();
+		System.out.println("Server received: " + s);
+		receiver.close();
+		}
+		catch ( Exception e){ System.err.println("Exception");}
 	}
 	/**
 	* This is the master procedure.
@@ -108,7 +122,15 @@ public class Rubiks {
 	*/
 	private static void slave(Ibis ibis, IbisIdentifier master) {
 		// TODO Auto-generated method stub
-		
+		try {
+		SendPort sender = ibis.createSendPort(portType);
+		sender.connect(master, "master");
+		// Send the message.
+		WriteMessage w = sender.newMessage();
+		w.writeString("Hi");
+		w.finish();
+		sender.close();
+		} catch (Exception e) {System.err.println("Exception client");}
 	}
 	
 	public static void printUsage() {
