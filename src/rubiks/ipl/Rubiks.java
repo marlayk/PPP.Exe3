@@ -1,5 +1,8 @@
 package rubiks.ipl;
 
+import java.io.IOException;
+
+
 import ibis.ipl.*;
 
 /**
@@ -17,7 +20,9 @@ public class Rubiks {
 	/*
 	 * 	Port Types.
 	 */
-	static PortType portType = new PortType(PortType.CONNECTION_ONE_TO_MANY);
+	static PortType portType = new PortType(PortType.CONNECTION_ONE_TO_MANY, PortType.COMMUNICATION_RELIABLE, 
+			PortType.RECEIVE_EXPLICIT, PortType.SERIALIZATION_OBJECT);
+	
 	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT);
 	/**
      * Recursive function to find a solution for a given cube. Only searches to
@@ -61,14 +66,17 @@ public class Rubiks {
     }
 	
 	/**
-	* Solves a Rubik's cube by iteratively searching for solutions with a
-	* greater depth. This guarantees the optimal solution is found. Repeats all
-	* work for the previous iteration each iteration though...
+	* This is the master procedure.
+	* 
+	* @param ibis
+	* 			the Ibis starting point
 	* 
 	* @param cube
 	*            the cube to solve
 	*/
-	private static void solve(Cube cube) {
+	private static void master(Ibis ibis, Cube cube) {
+		
+		
 		// cache used for cube objects. Doing new Cube() for every move
 		// overloads the garbage collector
 		CubeCache cache = new CubeCache(cube.getSize());
@@ -88,9 +96,22 @@ public class Rubiks {
 		System.out.println();
 		System.out.println("Solving cube possible in " + result + " ways of "
 			+ bound + " steps");
-		}
-
-		public static void printUsage() {
+	}
+	/**
+	* This is the master procedure.
+	* 
+	* @param ibis
+	* 			the Ibis starting point
+	* 
+	* @param master
+	*            the master identifier
+	*/
+	private static void slave(Ibis ibis, IbisIdentifier master) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public static void printUsage() {
 		System.out.println("Rubiks Cube solver");
 		System.out.println("");
 		System.out
@@ -166,31 +187,60 @@ public class Rubiks {
 			System.exit(1);
 		    }
 		}
-
-		// print cube info
-		System.out.println("Searching for solution for cube of size "
-			+ cube.getSize() + ", twists = " + twists + ", seed = " + seed);
-		cube.print(System.out);
-		System.out.flush();
+		
+		//Initialization.
+		Ibis ibis = null;
 		try
 		{
-			Ibis ibis = IbisFactory.createIbis(ibisCapabilities, null, portType);
+			ibis = IbisFactory.createIbis(ibisCapabilities, null, portType);
 		}
 		catch (IbisCreationFailedException e)
 		{
 			System.err.println("Ibis creation failed: " + e.getMessage());
+			System.exit(1);
 		}
-		// solve
-		long start = System.currentTimeMillis();
-		solve(cube);
-		long end = System.currentTimeMillis();
-
-		// NOTE: this is printed to standard error! The rest of the output is
-		// constant for each set of parameters. Printing this to standard error
-		// makes the output of standard out comparable with "diff"
-		System.err.println("Solving cube took " + (end - start)
-			+ " milliseconds");
-
+		//Master election.
+		IbisIdentifier master = null;
+		try 
+		{
+			master = ibis.registry().elect("Master");
+		} catch (IOException e) 
+		{
+			System.err.println("Master election failed: " + e.getMessage());
+			System.exit(1);
+		}
+		
+		if ( master.equals(ibis.identifier()) )
+		{
+			// print cube info
+			System.out.println("Searching for solution for cube of size "
+				+ cube.getSize() + ", twists = " + twists + ", seed = " + seed);
+			cube.print(System.out);
+			System.out.flush();
+			
+			// solve
+			long start = System.currentTimeMillis();
+			master(ibis,cube);
+			long end = System.currentTimeMillis();
+			// NOTE: this is printed to standard error! The rest of the output is
+			// constant for each set of parameters. Printing this to standard error
+			// makes the output of standard out comparable with "diff"
+			System.err.println("Solving cube took " + (end - start)
+				+ " milliseconds");
+		}
+		else
+		{
+			slave(ibis, master);
+		}
+		
+		try 
+		{
+			ibis.end();
+		} 
+		catch (IOException e) 
+		{
+			System.err.println("Termination failed: " + e.getMessage());
+			System.exit(1);
+		}
 	}
-
 }
