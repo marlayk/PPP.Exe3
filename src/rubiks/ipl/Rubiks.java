@@ -31,7 +31,7 @@ public class Rubiks {
 		    cube.setBound(bound);
 
 		    System.out.print(" " + bound);
-		    result = solutions(cube, cache);
+		    //result = solutions(cube, cache);
 		}
 
 		System.out.println();
