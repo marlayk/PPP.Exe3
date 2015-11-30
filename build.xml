@@ -57,11 +57,11 @@
 
 
         <!-- rewrite applications using IbisC 
-        	(optional step for ipl applications) -->
+        	(optional step for ipl applications) 
         <java classname="ibis.compile.Ibisc" taskname="Ibisc" failonerror="true" fork="true">
             <arg line="${jar}" />
             <classpath refid="default.classpath" />
-        </java>
+        </java> -->
 
 
         <delete dir="${tmp}" />
