@@ -1,6 +1,6 @@
 package rubiks.ipl;
 
-import ibis.ipl.PortType;
+//import ibis.ipl.*;
 
 /**
  * Parallel solver for rubik's cube puzzle.
@@ -17,7 +17,7 @@ public class Rubiks {
 	/*
 	 * 	Port Types.
 	 */
-	PortType portType = new PortType(PortType.CONNECTION_ONE_TO_MANY);
+	//PortType portType = new PortType(PortType.CONNECTION_ONE_TO_MANY);
 	/**
      * Recursive function to find a solution for a given cube. Only searches to
      * the bound set in the cube object.
