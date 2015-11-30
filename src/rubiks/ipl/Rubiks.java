@@ -1,5 +1,6 @@
 package rubiks.ipl;
 
+
 /**
  * Parallel solver for rubik's cube puzzle.
  * 
@@ -8,7 +9,52 @@ package rubiks.ipl;
 public class Rubiks {
 
 	public static final boolean PRINT_SOLUTION = false;
+	/*
+	 * TODO: Find out if this makes sense.
+	 */
 	public static final int SEQUENTIAL_LIMIT = 10;
+	
+	/**
+     * Recursive function to find a solution for a given cube. Only searches to
+     * the bound set in the cube object.
+     * 
+     * @param cube
+     *            cube to solve
+     * @param cache
+     *            cache of cubes used for new cube objects
+     * @return the number of solutions found
+     */
+    private static int solutions(Cube cube, CubeCache cache) {
+        if (cube.isSolved()) {
+            return 1;
+        }
+
+        if (cube.getTwists() >= cube.getBound()) {
+            return 0;
+        }
+
+        // generate all possible cubes from this one by twisting it in
+        // every possible way. Gets new objects from the cache
+        Cube[] children = cube.generateChildren(cache);
+
+        int result = 0;
+
+        for (Cube child : children) {
+            // recursion step
+            int childSolutions = solutions(child, cache);
+            if (childSolutions > 0) {
+                result += childSolutions;
+                if (PRINT_SOLUTION) {
+                    child.print(System.err);
+                }
+            }
+            // put child object in cache
+            cache.put(child);
+        }
+
+        return result;
+    }
+	
 	/**
 	* Solves a Rubik's cube by iteratively searching for solutions with a
 	* greater depth. This guarantees the optimal solution is found. Repeats all
@@ -31,7 +77,7 @@ public class Rubiks {
 		    cube.setBound(bound);
 
 		    System.out.print(" " + bound);
-		    //result = solutions(cube, cache);
+		    result = solutions(cube, cache);
 		}
 
 		System.out.println();
