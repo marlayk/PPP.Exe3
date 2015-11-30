@@ -1,6 +1,6 @@
 package rubiks.ipl;
 
-//import ibis.ipl.*;
+import ibis.ipl.*;
 
 /**
  * Parallel solver for rubik's cube puzzle.
@@ -17,7 +17,8 @@ public class Rubiks {
 	/*
 	 * 	Port Types.
 	 */
-	//PortType portType = new PortType(PortType.CONNECTION_ONE_TO_MANY);
+	static PortType portType = new PortType(PortType.CONNECTION_ONE_TO_MANY);
+	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT);
 	/**
      * Recursive function to find a solution for a given cube. Only searches to
      * the bound set in the cube object.
@@ -171,8 +172,14 @@ public class Rubiks {
 			+ cube.getSize() + ", twists = " + twists + ", seed = " + seed);
 		cube.print(System.out);
 		System.out.flush();
-
-
+		try
+		{
+			Ibis ibis = IbisFactory.createIbis(ibisCapabilities, null, portType);
+		}
+		catch (IbisCreationFailedException e)
+		{
+			System.err.println("Ibis creation failed: " + e.getMessage());
+		}
 		// solve
 		long start = System.currentTimeMillis();
 		solve(cube);
