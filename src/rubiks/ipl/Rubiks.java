@@ -20,7 +20,7 @@ public class Rubiks {
 	/*
 	 * 	Port Types.
 	 */
-	static PortType portType = new PortType(PortType.CONNECTION_ONE_TO_MANY, PortType.COMMUNICATION_RELIABLE, 
+	static PortType portType = new PortType(PortType.CONNECTION_ONE_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
 			PortType.RECEIVE_EXPLICIT, PortType.SERIALIZATION_OBJECT);
 	
 	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT);
@@ -225,8 +225,9 @@ public class Rubiks {
 		IbisIdentifier master = null;
 		try 
 		{
-			master = ibis.registry().elect("Master");
-		} catch (IOException e) 
+			master = ibis.registry().elect("master");
+		} 
+		catch (IOException e) 
 		{
 			System.err.println("Master election failed: " + e.getMessage());
 			System.exit(1);
