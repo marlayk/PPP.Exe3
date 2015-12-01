@@ -125,12 +125,16 @@ public class Master implements MessageUpcall{
             	{
             		try
             		{
-            		SendPort send = myIbis.createSendPort(masterToSlavePortType);
-            		send.connect(slaves.poll());
-            		
-            		WriteMessage job = send.newMessage();
-            		job.writeObject(next);
-            		job.finish();
+	            		SendPort send = myIbis.createSendPort(masterToSlavePortType);
+	            		send.connect(slaves.poll());
+	            		
+	            		WriteMessage job = send.newMessage();
+	            		job.writeObject(next);
+	            		job.finish();
+	            		synchronized (syncJobs) 
+	            		{
+							this.givenJobs++;
+						}
             		}
             		catch (ConnectionFailedException e)
             		{

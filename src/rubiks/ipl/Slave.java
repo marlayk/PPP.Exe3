@@ -52,7 +52,7 @@ public class Slave {
 		} 
 		catch (ConnectionFailedException e) 
 		{
-			System.err.println("Unable to connect: " + e.getMessage());
+			System.err.println("Unable to connect to the master: " + e.getMessage());
 			return;
 		}
 		/*
