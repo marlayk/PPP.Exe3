@@ -114,6 +114,8 @@ public class Master implements MessageUpcall{
             		}
             	}
             }
+            
+            System.err.println("Done..");
             /*
              * Send jobs to the slaves.
              * When there are no slaves waiting, perform some iteration.
@@ -143,7 +145,6 @@ public class Master implements MessageUpcall{
             		}
             		catch (IOException e)
             		{
-            			//TODO: why crash??
             			System.err.println("Unable send the job to the slave: " + e.getMessage());
             			return;	
             		}
@@ -169,6 +170,7 @@ public class Master implements MessageUpcall{
             		}
             	}
             }
+            System.err.println("DoneII..");
             /*
              * Wait for all the jobs to terminate.
              */
@@ -207,7 +209,6 @@ public class Master implements MessageUpcall{
     		}
     		catch (IOException e)
     		{
-    			//TODO: why crash??
     			System.err.println("Unable send the job to the slave: " + e.getMessage());
     			return;	
     		}
