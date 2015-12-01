@@ -84,6 +84,14 @@ public class Master implements MessageUpcall{
 			 */
             System.out.print(" " + bound);
             
+            
+            try {
+				System.in.read();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            
             cube.setBound(bound);
             this.jobs.add(cube);
             /*
@@ -113,7 +121,6 @@ public class Master implements MessageUpcall{
             			break;
             		}
             	}
-            	
             	cache.put(c);
             }
             /*
