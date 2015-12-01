@@ -87,15 +87,24 @@ public class Master implements MessageUpcall{
             cube.setBound(bound);
             this.jobs.add(cube);
             /*
-             * Execute the first iteration.
+             * Execute the first iterations.
              */
-            while ( cube.getBound()  - jobs.peek().getBound() < INITIAL_ITERATION )
+            while ( jobs.peek().getTwists() < INITIAL_ITERATION )
             {
             	Cube c = jobs.poll();
-            	Cube[] children = c.generateChildren(cache);
-            	for ( Cube cc : children )
+            	
+            	if ( c.isSolved() )
             	{
-            		jobs.add(cc);
+            		this.solutions++;
+            	}
+            	
+            	if ( c.getTwists() < c.getBound() )
+            	{
+	            	Cube[] children = c.generateChildren(cache);
+	            	for ( Cube cc : children )
+	            	{
+	            		jobs.add(cc);
+	            	}
             	}
             }
             /*
