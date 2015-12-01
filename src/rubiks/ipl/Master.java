@@ -113,12 +113,13 @@ public class Master implements MessageUpcall{
             			break;
             		}
             	}
+            	
+            	cache.put(c);
             }
             /*
              * Send jobs to the slaves.
              * When there are no slaves waiting, perform some iteration.
              */
-            int x = 0; //DEBUG
             while ( ! jobs.isEmpty() )
             {
             	Cube next = jobs.poll();
@@ -150,10 +151,6 @@ public class Master implements MessageUpcall{
             	}
             	else
             	{
-            		if ( this.bound == 7 )
-            		{
-            			System.err.println(++x); //DEBUG
-            		}
             		if ( next.isSolved() )
             		{
             			System.err.println("Found a solution.");
@@ -172,6 +169,7 @@ public class Master implements MessageUpcall{
                     	}
             		}
             	}
+            	cache.put(next);
             }
             /*
              * Wait for all the jobs to terminate.
