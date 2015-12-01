@@ -186,6 +186,7 @@ public class Master implements MessageUpcall{
 		/*
 		 * Quit all the slaves.
 		 */
+		System.err.println("Start quitting slaves. . .");
 		for ( ReceivePortIdentifier slave : slaves)
 		{
 			try
