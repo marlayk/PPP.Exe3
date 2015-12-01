@@ -121,7 +121,7 @@ public class Master implements MessageUpcall{
             			break;
             		}
             	}
-            	cache.put(c);
+            	if ( ! cube.equals(c)) cache.put(c);
             }
             /*
              * Send jobs to the slaves.
