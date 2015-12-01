@@ -176,7 +176,7 @@ public class Master implements MessageUpcall{
                     	}
             		}
             	//}
-            	cache.put(next);
+            	if ( ! next.equals(cube) ) cache.put(next);
             }
             /*
              * Wait for all the jobs to terminate.
