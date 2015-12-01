@@ -152,7 +152,9 @@ public class Master implements MessageUpcall{
             	{
             		if ( next.isSolved() )
             		{
-            			synchronized (syncSolution) {
+            			System.err.println("Found a solution.");
+            			synchronized (syncSolution) 
+            			{
             				this.solutions++;
 						}
             		}
