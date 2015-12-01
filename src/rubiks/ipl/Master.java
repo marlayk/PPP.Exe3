@@ -106,6 +106,13 @@ public class Master implements MessageUpcall{
 	            		jobs.add(cc);
 	            	}
             	}
+            	else
+            	{
+            		if ( jobs.isEmpty() )
+            		{
+            			break;
+            		}
+            	}
             }
             /*
              * Send jobs to the slaves.
