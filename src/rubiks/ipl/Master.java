@@ -97,7 +97,7 @@ public class Master implements MessageUpcall{
             /*
              * Execute the first iterations.
              */
-            while ( jobs.peek().getTwists() < INITIAL_ITERATION )
+            /*while ( jobs.peek().getTwists() < INITIAL_ITERATION )
             {
             	Cube c = jobs.poll();
             	
@@ -122,7 +122,7 @@ public class Master implements MessageUpcall{
             		}
             	}
             	if ( ! cube.equals(c)) cache.put(c);
-            }
+            }*/
             /*
              * Send jobs to the slaves.
              * When there are no slaves waiting, perform some iteration.
@@ -130,7 +130,7 @@ public class Master implements MessageUpcall{
             while ( ! jobs.isEmpty() )
             {
             	Cube next = jobs.poll();
-            	if ( ! slaves.isEmpty() )
+            	/*if ( ! slaves.isEmpty() )
             	{
             		try
             		{
@@ -157,7 +157,7 @@ public class Master implements MessageUpcall{
             		}
             	}
             	else
-            	{
+            	{*/
             		if ( next.isSolved() )
             		{
             			System.err.println("Found a solution.");
@@ -175,7 +175,7 @@ public class Master implements MessageUpcall{
                     		jobs.add(cc);
                     	}
             		}
-            	}
+            	//}
             	cache.put(next);
             }
             /*
