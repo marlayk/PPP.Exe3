@@ -14,124 +14,15 @@ public class Rubiks {
 
 	public static final boolean PRINT_SOLUTION = false;
 	/*
-	 * TODO: Find out if this makes sense.
-	 */
-	public static final int SEQUENTIAL_LIMIT = 10;
-	/*
 	 * 	Port Types.
 	 */
-	static PortType portType = new PortType(PortType.CONNECTION_ONE_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
+	static PortType masterToSlavePortType = new PortType(PortType.CONNECTION_ONE_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
 			PortType.RECEIVE_EXPLICIT, PortType.SERIALIZATION_OBJECT);
 	
-	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT);
-	/**
-     * Recursive function to find a solution for a given cube. Only searches to
-     * the bound set in the cube object.
-     * 
-     * @param cube
-     *            cube to solve
-     * @param cache
-     *            cache of cubes used for new cube objects
-     * @return the number of solutions found
-     */
-    private static int solutions(Cube cube, CubeCache cache) {
-        if (cube.isSolved()) {
-            return 1;
-        }
-
-        if (cube.getTwists() >= cube.getBound()) {
-            return 0;
-        }
-
-        // generate all possible cubes from this one by twisting it in
-        // every possible way. Gets new objects from the cache
-        Cube[] children = cube.generateChildren(cache);
-
-        int result = 0;
-
-        for (Cube child : children) {
-            // recursion step
-            int childSolutions = solutions(child, cache);
-            if (childSolutions > 0) {
-                result += childSolutions;
-                if (PRINT_SOLUTION) {
-                    child.print(System.err);
-                }
-            }
-            // put child object in cache
-            cache.put(child);
-        }
-
-        return result;
-    }
+	static PortType slaveToMasterPortType = new PortType(PortType.CONNECTION_MANY_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
+					PortType.RECEIVE_AUTO_UPCALLS, PortType.SERIALIZATION_OBJECT);
 	
-	/**
-	* This is the master procedure.
-	* 
-	* @param ibis
-	* 			the Ibis starting point
-	* 
-	* @param cube
-	*            the cube to solve
-	*/
-	private static void master(Ibis ibis, Cube cube) {
-		
-		/*
-		// cache used for cube objects. Doing new Cube() for every move
-		// overloads the garbage collector
-		CubeCache cache = new CubeCache(cube.getSize());
-		int bound = 0;
-		int result = 0;
-
-		System.out.print("Bound now:");
-
-		while (result == 0) {
-		    bound++;
-		    cube.setBound(bound);
-
-		    System.out.print(" " + bound);
-		    result = solutions(cube, cache);
-		}
-
-		System.out.println();
-		System.out.println("Solving cube possible in " + result + " ways of "
-			+ bound + " steps");
-			*/
-		// Create a receive port and enable connections.
-		try
-		{
-		ReceivePort receiver = ibis.createReceivePort(portType, "master");
-		receiver.enableConnections();
-		// Read the message.
-		ReadMessage r = receiver.receive();
-		String s = r.readString();
-		r.finish();
-		System.out.println("Server received: " + s);
-		receiver.close();
-		}
-		catch ( Exception e){ System.err.println("Exception");}
-	}
-	/**
-	* This is the master procedure.
-	* 
-	* @param ibis
-	* 			the Ibis starting point
-	* 
-	* @param master
-	*            the master identifier
-	*/
-	private static void slave(Ibis ibis, IbisIdentifier master) {
-		// TODO Auto-generated method stub
-		try {
-		SendPort sender = ibis.createSendPort(portType);
-		sender.connect(master, "master");
-		// Send the message.
-		WriteMessage w = sender.newMessage();
-		w.writeString("Hi");
-		w.finish();
-		sender.close();
-		} catch (Exception e) {System.err.println("Exception client");}
-	}
+	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT);
 	
 	public static void printUsage() {
 		System.out.println("Rubiks Cube solver");
@@ -214,7 +105,7 @@ public class Rubiks {
 		Ibis ibis = null;
 		try
 		{
-			ibis = IbisFactory.createIbis(ibisCapabilities, null, portType);
+			ibis = IbisFactory.createIbis(ibisCapabilities, null, slaveToMasterPortType, masterToSlavePortType);
 		}
 		catch (IbisCreationFailedException e)
 		{
@@ -235,25 +126,17 @@ public class Rubiks {
 		
 		if ( master.equals(ibis.identifier()) )
 		{
-			// print cube info
+			// print cube info.
 			System.out.println("Searching for solution for cube of size "
 				+ cube.getSize() + ", twists = " + twists + ", seed = " + seed);
 			cube.print(System.out);
-			System.out.flush();
-			
-			// solve
-			long start = System.currentTimeMillis();
-			master(ibis,cube);
-			long end = System.currentTimeMillis();
-			// NOTE: this is printed to standard error! The rest of the output is
-			// constant for each set of parameters. Printing this to standard error
-			// makes the output of standard out comparable with "diff"
-			System.err.println("Solving cube took " + (end - start)
-				+ " milliseconds");
+			System.out.flush();	
+			//Start the master.
+			new Master(ibis, cube, masterToSlavePortType, slaveToMasterPortType).Run();
 		}
 		else
 		{
-			slave(ibis, master);
+			new Slave(ibis, master, masterToSlavePortType, slaveToMasterPortType, cube.getSize()).Run();
 		}
 		
 		try 
