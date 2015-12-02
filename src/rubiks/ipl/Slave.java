@@ -80,6 +80,7 @@ public class Slave {
 				 WriteMessage result = send.newMessage();
 			     result.writeObject(new ResultMessage(myResult, receive.identifier()));
 			     result.finish();
+			     System.err.println("Slave: job received. . .");//DEBUG 
 			}
 			catch ( IOException e)
 			{
