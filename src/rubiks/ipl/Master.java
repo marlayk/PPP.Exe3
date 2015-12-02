@@ -41,7 +41,7 @@ public class Master implements MessageUpcall{
 		
 		try 
 		{
-			receive = myIbis.createReceivePort(slaveToMasterPortType, null, this);
+			receive = myIbis.createReceivePort(slaveToMasterPortType, "slave-to-master", this);
 			receive.enableConnections();
 			receive.enableMessageUpcalls();
 		} 
