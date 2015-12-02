@@ -18,9 +18,9 @@ public class Master implements MessageUpcall{
 	PortType slaveToMasterPortType;
 	CubeCache cache;
 	LinkedList<ReceivePortIdentifier> slaves;
-	Object syncJobs;
+	Object syncJobs = new Object();
 	int givenJobs = 0;
-	Object syncSolution;
+	Object syncSolution = new Object();
 	int solutions = 0;
 	int bound = 0;
 	
