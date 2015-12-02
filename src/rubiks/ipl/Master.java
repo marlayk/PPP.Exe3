@@ -17,7 +17,6 @@ public class Master implements MessageUpcall{
 	PortType masterToSlavePortType;
 	PortType slaveToMasterPortType;
 	CubeCache cache;
-	LinkedList<Cube> jobs;
 	LinkedList<ReceivePortIdentifier> slaves;
 	Object syncJobs;
 	int givenJobs = 0;
@@ -32,7 +31,6 @@ public class Master implements MessageUpcall{
 		this.masterToSlavePortType = masterToSlave;
 		this.slaveToMasterPortType = slaveToMaster;
 		this.cache = new CubeCache(cube.getSize());
-		this.jobs = new LinkedList<Cube>();
 		this.slaves = new LinkedList<ReceivePortIdentifier>();
 	}
 	
@@ -58,145 +56,10 @@ public class Master implements MessageUpcall{
 		long end = System.currentTimeMillis();
 		System.err.println("Solving cube took " + (end - start) + " milliseconds");
 		
-		try 
-		{
-			receive.close();
-		} 
-		catch (IOException e) 
-		{
-			System.err.println("Unable to close the receive port: " + e.getMessage());
-			return;
-		}
-	}
-
-	private void Solve() {
-		/*
-		 * 
-		 */
-		this.bound = 0;
-		this.solutions = 0;
-		
-		while ( this.solutions == 0 )
-		{
-			this.bound ++;
-			/*
-			 * Solve
-			 */
-            System.out.print(" " + bound);
-            
-            
-            try {
-				System.in.read();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-            
-            cube.setBound(bound);
-            this.jobs.add(cube);
-            /*
-             * Execute the first iterations.
-             */
-            /*while ( jobs.peek().getTwists() < INITIAL_ITERATION )
-            {
-            	Cube c = jobs.poll();
-            	
-            	if ( c.isSolved() )
-            	{
-            		this.solutions++;
-            	}
-            	
-            	if ( c.getTwists() < c.getBound() )
-            	{
-	            	Cube[] children = c.generateChildren(cache);
-	            	for ( Cube cc : children )
-	            	{
-	            		jobs.add(cc);
-	            	}
-            	}
-            	else
-            	{
-            		if ( jobs.isEmpty() )
-            		{
-            			break;
-            		}
-            	}
-            	if ( ! cube.equals(c)) cache.put(c);
-            }*/
-            /*
-             * Send jobs to the slaves.
-             * When there are no slaves waiting, perform some iteration.
-             */
-            while ( ! jobs.isEmpty() )
-            {
-            	Cube next = jobs.poll();
-            	/*if ( ! slaves.isEmpty() )
-            	{
-            		try
-            		{
-	            		SendPort send = myIbis.createSendPort(masterToSlavePortType);
-	            		send.connect(slaves.poll());
-	            		
-	            		WriteMessage job = send.newMessage();
-	            		job.writeObject(next);
-	            		job.finish();
-	            		synchronized (syncJobs) 
-	            		{
-							this.givenJobs++;
-						}
-            		}
-            		catch (ConnectionFailedException e)
-            		{
-            			System.err.println("Unable to connect with the slave: " + e.getMessage());
-            			return;
-            		}
-            		catch (IOException e)
-            		{
-            			System.err.println("Unable send the job to the slave: " + e.getMessage());
-            			return;	
-            		}
-            	}
-            	else
-            	{*/
-            		if ( next.isSolved() )
-            		{
-            			System.err.println("Found a solution.");
-            			synchronized (syncSolution) 
-            			{
-            				this.solutions++;
-						}
-            		}
-            		
-            		if ( next.getTwists() < next.getBound() )
-            		{
-            			Cube[] children = next.generateChildren(cache);
-                    	for ( Cube cc : children )
-                    	{
-                    		jobs.add(cc);
-                    	}
-            		}
-            	//}
-            	if ( ! next.equals(cube) ) cache.put(next);
-            }
-            /*
-             * Wait for all the jobs to terminate.
-             */
-            while ( this.givenJobs > 0 )
-            {
-            	try 
-            	{
-					wait();
-				} 
-            	catch (InterruptedException e) 
-            	{
-            		System.err.println("Interrupted: " + e.getMessage());
-        			return;	
-				}
-            }
-		}
 		/*
 		 * Quit all the slaves.
 		 */
+		//DEBUG
 		System.err.println("Start quitting slaves. . .");
 		for ( ReceivePortIdentifier slave : slaves)
 		{
@@ -220,11 +83,134 @@ public class Master implements MessageUpcall{
     			return;	
     		}
 		}
-        System.out.println();
+		/*
+		 * Close the receive port.
+		 */
+		try 
+		{
+			receive.close();
+		} 
+		catch (IOException e) 
+		{
+			System.err.println("Unable to close the receive port: " + e.getMessage());
+			return;
+		}
+	}
+
+	private void Solve() {
+		/*
+		 * 
+		 */
+		this.bound = 0;
+		this.solutions = 0;
+		
+		while ( this.solutions == 0 )
+		{
+			/*
+			 * Solve
+			 */
+			this.bound ++;
+            System.out.print(" " + bound);
+            
+            //DEBUG
+            try {
+				System.in.read();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            
+            cube.setBound(bound);
+            int tmpSolutions = solutions(cube, cache);
+            
+            synchronized (syncSolution) {
+            	this.solutions += tmpSolutions;
+			}
+            
+            /*
+             * Wait for all the jobs to terminate.
+             */
+            while ( this.givenJobs > 0 )
+            {
+            	try 
+            	{
+					wait();
+				} 
+            	catch (InterruptedException e) 
+            	{
+            		System.err.println("Interrupted: " + e.getMessage());
+        			return;	
+				}
+            }
+		}
+		System.out.println();
         System.out.println("Solving cube possible in " + this.solutions + " ways of "
                 + bound + " steps");	
 	}
 
+	private int solutions(Cube cube, CubeCache cache) {
+        if (cube.isSolved()) {
+            return 1;
+        }
+
+        if (cube.getTwists() >= cube.getBound()) {
+            return 0;
+        }
+        
+        if ( ! slaves.isEmpty() && cube.getTwists() < INITIAL_ITERATION )
+    	{
+    		sendCube(cube);
+    		return 0;
+    	}
+        // generate all possible cubes from this one by twisting it in
+        // every possible way. Gets new objects from the cache
+        Cube[] children = cube.generateChildren(cache);
+
+        int result = 0;
+
+        for (Cube child : children) {
+            // recursion step
+            int childSolutions = solutions(child, cache);
+            if (childSolutions > 0) {
+                result += childSolutions;
+            }
+            // put child object in cache
+            cache.put(child);
+        }
+
+        return result;
+    }
+	
+	public void sendCube (Cube cube)
+	{
+		try
+		{
+    		SendPort send = myIbis.createSendPort(masterToSlavePortType);
+    		send.connect(slaves.poll());
+    		
+    		WriteMessage job = send.newMessage();
+    		job.writeObject(cube);
+    		job.finish();
+    		synchronized (syncJobs) 
+    		{
+				this.givenJobs++;
+			}
+		}
+		catch (ConnectionFailedException e)
+		{
+			/*
+			 * TODO: handle this.
+			 */
+			System.err.println("Unable to connect with the slave: " + e.getMessage());
+			return;
+		}
+		catch (IOException e)
+		{
+			System.err.println("Unable send the job to the slave: " + e.getMessage());
+			return;	
+		}
+	}
+	
 	@Override
 	public void upcall(ReadMessage message) throws IOException, ClassNotFoundException {
 		
