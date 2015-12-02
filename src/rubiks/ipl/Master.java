@@ -71,6 +71,7 @@ public class Master implements MessageUpcall{
 	    		WriteMessage job = send.newMessage();
 	    		job.writeObject(null);
 	    		job.finish();
+	    		System.err.println("Quit. . ."); //DEBUG
     		}
     		catch (ConnectionFailedException e)
     		{
