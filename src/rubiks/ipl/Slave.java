@@ -67,13 +67,13 @@ public class Slave {
 			System.err.println("Unable to create the receive port: " + e.getMessage());
 			return;
 		}
-		receive.enableConnections();
 
 		do
 		{
 			/*
 			 * Send the result (it will be just a request on the first iteration) to the server.
 			 */
+			receive.enableConnections();
 			try 
 			{
 				 WriteMessage result = send.newMessage();
