@@ -92,6 +92,7 @@ public class Master{
              */
             while ( this.givenJobs > 0 )
             {
+            	System.err.println("Master: " + this.bound + " waiting for " + this.givenJobs);
             	try
             	{
 	            	ReadMessage result = receive.receive();
@@ -135,6 +136,7 @@ public class Master{
         	if ( !this.slaves.isEmpty() )
         	{
         		sendCube(this.slaves.poll(), cube);
+            	System.err.println("Master: " + this.bound + " from queue " + this.givenJobs);
         		return 0;
         	}
         	
