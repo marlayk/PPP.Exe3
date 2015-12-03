@@ -158,7 +158,7 @@ public class Master implements MessageUpcall{
             return 0;
         }
         
-        if ( ! slaves.isEmpty() && cube.getTwists() < INITIAL_ITERATION )
+        if ( ! slaves.isEmpty() &&  ! (cube.getTwists() < INITIAL_ITERATION) )
     	{
     		sendCube(cube);
     		return 0;
