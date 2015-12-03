@@ -95,17 +95,15 @@ public class Master{
             	System.err.println("Master: " + this.bound + " waiting for " + this.givenJobs);
             	try
             	{
-	            	ReadMessage result = receive.poll();
-	            	if ( result != null)
-	            	{
-		            	ResultMessage message = (ResultMessage) result.readObject();
-		            	if ( message.result != -1)
-		        		{
-		        			this.solutions += message.result;
-		        			this.givenJobs--;
-		        		}
-		            	this.slaves.add(message.receivePort);
-	            	}
+	            	ReadMessage result = receive.receive();
+	            	ResultMessage message = (ResultMessage) result.readObject();
+	            	if ( message.result != -1)
+	        		{
+	        			this.solutions += message.result;
+	        			this.givenJobs--;
+	        		}
+	            	this.slaves.add(message.receivePort);
+	            	result.finish();
             	}
             	catch (ClassNotFoundException e1) 
 				{
