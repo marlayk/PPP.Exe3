@@ -20,7 +20,7 @@ public class Rubiks {
 			PortType.RECEIVE_EXPLICIT, PortType.SERIALIZATION_OBJECT);
 	
 	static PortType slaveToMasterPortType = new PortType(PortType.CONNECTION_MANY_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
-					PortType.RECEIVE_EXPLICIT, PortType.SERIALIZATION_OBJECT);
+					PortType.RECEIVE_POLL, PortType.SERIALIZATION_OBJECT);
 	
 	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT);
 	
