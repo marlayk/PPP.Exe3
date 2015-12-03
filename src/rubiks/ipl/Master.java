@@ -160,7 +160,6 @@ public class Master implements MessageUpcall{
         
         if ( ! slaves.isEmpty() &&  ! (cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < 3))
     	{
-        	System.err.println("send a cube.");
     		sendCube(cube);
     		return 0;
     	}
@@ -221,7 +220,6 @@ public class Master implements MessageUpcall{
 		/*
 		 * 
 		 */
-		System.err.println("result back.");
 		ResultMessage resultMessage = (ResultMessage) message.readObject();
 		message.finish();
 		
