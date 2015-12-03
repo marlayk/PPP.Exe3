@@ -95,6 +95,8 @@ public class Slave {
 		        this.currentCube = (Cube) job.readObject();
 		        job.finish();
 		        receive.close();
+
+				System.err.println("Slave: job received, check. . .");
 			}
 			catch ( IOException e)
 			{
