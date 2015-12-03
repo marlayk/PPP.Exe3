@@ -116,8 +116,7 @@ public class Slave {
 				this.myResult = solutions(currentCube, cache);
 			}
 		} while ( this.currentCube != null);
-
-		System.err.println("Slave term. . .");
+		
 		try 
 		{
 			send.close();
