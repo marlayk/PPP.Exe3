@@ -91,7 +91,11 @@ public class Slave {
 			 */
 			try
 			{
+
+
+				System.err.println("Slave: receive. . .");
 				ReadMessage job = receive.receive();
+				System.err.println("Slave: received. . .");
 		        this.currentCube = (Cube) job.readObject();
 		        job.finish();
 		        receive.close();
