@@ -10,8 +10,6 @@ import ibis.ipl.*;
  */
 public class Master{
 	
-	static final int INITIAL_ITERATION = 2;
-	static final int SEQUENTIAL_THRESHOLD = 4;
 	Ibis myIbis;
 	Cube cube;
 	PortType masterToSlavePortType;
@@ -134,8 +132,8 @@ public class Master{
         if (cube.getTwists() >= cube.getBound()) {
             return 0;
         }
-        
-        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < bound - INITIAL_ITERATION))
+        //TODO: Giocare qui.
+        if ( !(cube.getTwists() < 1) && !(cube.getBound() - cube.getTwists() < bound - 1))
     	{
         	/*
         	 * check
