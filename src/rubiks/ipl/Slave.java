@@ -81,7 +81,6 @@ public class Slave {
 				 WriteMessage result = send.newMessage();
 			     result.writeObject(new ResultMessage(myResult, receive.identifier()));
 			     result.finish();
-			     if ( this.currentCube != null && this.currentCube.getBound() == 7) System.err.println("Slave: sent 7");
 			}
 			catch ( IOException e)
 			{
