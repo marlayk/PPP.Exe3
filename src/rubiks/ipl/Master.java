@@ -60,8 +60,6 @@ public class Master implements MessageUpcall{
 		/*
 		 * Quit all the slaves.
 		 */
-		//DEBUG
-		System.err.println("Start quitting slaves. . .");
 		for ( ReceivePortIdentifier slave : slaves)
 		{
 			try
@@ -72,7 +70,6 @@ public class Master implements MessageUpcall{
 	    		WriteMessage job = send.newMessage();
 	    		job.writeObject(null);
 	    		job.finish();
-	    		System.err.println("Quit. . ."); //DEBUG
     		}
     		catch (ConnectionFailedException e)
     		{
@@ -161,7 +158,7 @@ public class Master implements MessageUpcall{
             return 0;
         }
         
-        if ( ! slaves.isEmpty() &&  ! (cube.getTwists() < INITIAL_ITERATION) )
+        if ( ! slaves.isEmpty() &&  ! (cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < 3))
     	{
     		sendCube(cube);
     		return 0;
