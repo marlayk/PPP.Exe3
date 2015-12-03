@@ -172,8 +172,9 @@ public class Master{
         if (cube.getTwists() >= cube.getBound()) {
             return 0;
         }
+        
         //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 4) )
+        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 6) )
     	{
         	/*
         	 * If there are slaves waiting for jobs in the queue, send a job to the first one.
@@ -240,8 +241,11 @@ public class Master{
         /*
          * If the job has to be solved locally, then the used approach is the recoursive one.
          */
-        // generate all possible cubes from this one by twisting it in
-        // every possible way. Gets new objects from the cache
+        /*
+         * generate all possible cubes from this one by twisting it in
+         *
+         * every possible way. Gets new objects from the cache
+         */
         Cube[] children = cube.generateChildren(cache);
 
         int result = 0;
