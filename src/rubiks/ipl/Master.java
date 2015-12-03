@@ -133,7 +133,7 @@ public class Master{
             return 0;
         }
         //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 1) && !(cube.getBound() - cube.getTwists() < Math.max(bound - 1, 3)) )
+        if ( !(cube.getTwists() < 1) && !(cube.getBound() - cube.getTwists() < Math.max(bound - 1, 4)) )
     	{
         	/*
         	 * check
