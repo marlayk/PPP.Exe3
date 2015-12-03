@@ -24,7 +24,7 @@ public class Master{
 	/*
 	 * The cache used.
 	 */
-	CubeCache cache = new CubeCache(cube.getSize());
+	CubeCache cache;
 	/*
 	 * Receive and send ports.
 	 */
@@ -64,6 +64,10 @@ public class Master{
 		this.cube = cube;
 		this.masterToSlavePortType = masterToSlave;
 		this.slaveToMasterPortType = slaveToMaster;
+		/*
+		 * Initialization of the local cache.
+		 */
+		this.cache = new CubeCache(cube.getSize());
 	}
 	public void Run()
 	{
