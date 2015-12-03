@@ -45,7 +45,6 @@ public class Slave {
 			System.err.println("Unable to create the send port: " + e.getMessage());
 			return;
 		}
-		System.err.println("Slave: send port created. . .");//DEBUG 
 		try 
 		{
 			send.connect(master, "slave-to-master");
@@ -55,7 +54,6 @@ public class Slave {
 			System.err.println("Unable to connect to the master: " + e.getMessage());
 			return;
 		}
-		System.err.println("Slave: connected to master. . .");//DEBUG 
 		/*
 		 * Create the receive port for the job.
 		 */
@@ -69,10 +67,8 @@ public class Slave {
 			System.err.println("Unable to create the receive port: " + e.getMessage());
 			return;
 		}
-		System.err.println("Slave: recv port created. . .");//DEBUG 
 		receive.enableConnections();
 
-		System.err.println("Slave: connections enabled. . .");//DEBUG 
 		do
 		{
 			/*
@@ -83,7 +79,6 @@ public class Slave {
 				 WriteMessage result = send.newMessage();
 			     result.writeObject(new ResultMessage(myResult, receive.identifier()));
 			     result.finish();
-			     System.err.println("Slave: request sent. . .");//DEBUG 
 			}
 			catch ( IOException e)
 			{

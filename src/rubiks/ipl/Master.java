@@ -232,7 +232,7 @@ public class Master implements MessageUpcall{
 		{
 			synchronized (syncJobs) {
 				givenJobs --;
-				notifyAll();
+				notify();
 			}
 		}
 		
