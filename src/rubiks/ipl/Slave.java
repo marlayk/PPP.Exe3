@@ -92,6 +92,7 @@ public class Slave {
 			 */
 			try
 			{
+				System.err.println("Slave weits. . .");
 				ReadMessage job = receive.receive();
 		        this.currentCube = (Cube) job.readObject();
 		        job.finish();
@@ -115,7 +116,8 @@ public class Slave {
 				this.myResult = solutions(currentCube, cache);
 			}
 		} while ( this.currentCube != null);
-		
+
+		System.err.println("Slave term. . .");
 		try 
 		{
 			send.close();
