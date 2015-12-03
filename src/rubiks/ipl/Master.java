@@ -134,15 +134,15 @@ public class Master implements MessageUpcall{
              */
             while ( this.givenJobs > 0 )
             {
-            	try 
+            	/*try 
             	{
-					monitor.wait();
+					//monitor.wait();
 				} 
             	catch (InterruptedException e) 
             	{
             		System.err.println("Interrupted: " + e.getMessage());
         			return;	
-				}
+				}*/
             }
 		}
 		System.out.println();
@@ -233,7 +233,6 @@ public class Master implements MessageUpcall{
 		{
 			synchronized (syncJobs) {
 				givenJobs --;
-				monitor.notify();
 			}
 		}
 		
