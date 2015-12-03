@@ -112,7 +112,6 @@ public class Slave {
 				/*
 				 * If there is a new job, solve it.
 				 */
-				System.err.println("Slave: job received. . .");
 				this.myResult = solutions(currentCube, cache);
 			}
 		} while ( this.currentCube != null);
