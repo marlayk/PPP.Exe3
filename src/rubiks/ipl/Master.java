@@ -172,6 +172,7 @@ public class Master{
         		}
         		
 	    		sendCube(message.receivePort,cube);
+            	System.err.println("Master: " + this.bound + " from receive " + this.givenJobs);
 	    		
 	    		try 
 	    		{
