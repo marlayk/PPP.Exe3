@@ -136,7 +136,7 @@ public class Master{
         	if ( !this.slaves.isEmpty() )
         	{
         		sendCube(this.slaves.poll(), cube);
-            	System.err.println("Master: " + this.bound + " from queue " + this.givenJobs);
+            	System.err.println("Master: " + cube.getBound() + " from queue " + this.givenJobs);
         		return 0;
         	}
         	
