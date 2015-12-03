@@ -79,6 +79,8 @@ public class Master{
 		{
 			System.err.println("During slaves quit: " + e1.getMessage());
 		}
+
+		System.err.println("Master: termination.");
 		/*
 		 * Close the receive port.
 		 */
@@ -91,6 +93,8 @@ public class Master{
 			System.err.println("Unable to close the receive port: " + e.getMessage());
 			return;
 		}
+		
+		System.err.println("Master: termination.");
 	}
 
 	private void Solve() {
