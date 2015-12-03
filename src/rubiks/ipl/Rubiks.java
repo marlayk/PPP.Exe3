@@ -16,7 +16,7 @@ public class Rubiks {
 	/*
 	 * 	Port Types.
 	 */
-	static PortType masterToSlavePortType = new PortType(PortType.CONNECTION_MANY_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
+	static PortType masterToSlavePortType = new PortType(PortType.CONNECTION_ONE_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
 			PortType.RECEIVE_EXPLICIT, PortType.SERIALIZATION_OBJECT);
 	
 	static PortType slaveToMasterPortType = new PortType(PortType.CONNECTION_MANY_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
