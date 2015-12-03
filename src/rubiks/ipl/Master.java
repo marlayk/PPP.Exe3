@@ -10,7 +10,7 @@ import ibis.ipl.*;
 public class Master{
 	
 	static final int INITIAL_ITERATION = 2;
-	static final int SEQUENTIAL_THRESHOLD = 0;
+	static final int SEQUENTIAL_THRESHOLD = 4;
 	Ibis myIbis;
 	Cube cube;
 	PortType masterToSlavePortType;
