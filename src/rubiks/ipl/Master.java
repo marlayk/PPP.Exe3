@@ -174,7 +174,7 @@ public class Master{
             return 0;
         }
         //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 4) )
+        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 5) )
     	{
         	/*
         	 * If there are slaves waiting for jobs in the queue, send a job to the first one.
@@ -289,7 +289,7 @@ public class Master{
     		/*
     		 * Send the message. Asynch send.
     		 */
-    		writeMessage.send();
+    		writeMessage.finish();
     		/*
     		 * Increase the number of active jobs.
     		 */
