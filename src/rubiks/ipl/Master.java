@@ -131,6 +131,7 @@ public class Master{
              */
             while ( this.givenJobs > 0 )
             {
+            	System.err.println("Aspetto " + this.givenJobs);
             	try
             	{
 	            	ReadMessage result = receive.receive();
