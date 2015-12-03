@@ -1,14 +1,13 @@
 package rubiks.ipl;
 
 import java.io.IOException;
-import java.util.LinkedList;
 
 import ibis.ipl.*;
 
 /**
  * This class represents a master.
  */
-public class Master implements MessageUpcall{
+public class Master{
 	
 	static final int INITIAL_ITERATION = 2;
 	
@@ -17,11 +16,8 @@ public class Master implements MessageUpcall{
 	PortType masterToSlavePortType;
 	PortType slaveToMasterPortType;
 	CubeCache cache;
-	LinkedList<ReceivePortIdentifier> slaves;
-	Object syncJobs = new Object();
-	Object monitor = new Object();
+	ReceivePort receive;
 	int givenJobs = 0;
-	Object syncSolution = new Object();
 	int solutions = 0;
 	int bound = 0;
 	
@@ -32,19 +28,17 @@ public class Master implements MessageUpcall{
 		this.masterToSlavePortType = masterToSlave;
 		this.slaveToMasterPortType = slaveToMaster;
 		this.cache = new CubeCache(cube.getSize());
-		this.slaves = new LinkedList<ReceivePortIdentifier>();
 	}
 	
 	public void Run()
 	{
 		//Init
-		ReceivePort receive = null;
+		receive = null;
 		
 		try 
 		{
-			receive = myIbis.createReceivePort(slaveToMasterPortType, "slave-to-master", this);
+			receive = myIbis.createReceivePort(slaveToMasterPortType, "slave-to-master");
 			receive.enableConnections();
-			receive.enableMessageUpcalls();
 		} 
 		catch (IOException e)
 		{
@@ -57,31 +51,6 @@ public class Master implements MessageUpcall{
 		long end = System.currentTimeMillis();
 		System.err.println("Solving cube took " + (end - start) + " milliseconds");
 		
-		/*
-		 * Quit all the slaves.
-		 */
-		for ( ReceivePortIdentifier slave : slaves)
-		{
-			try
-    		{
-	    		SendPort send = myIbis.createSendPort(masterToSlavePortType);
-	    		send.connect(slave);
-	    		
-	    		WriteMessage job = send.newMessage();
-	    		job.writeObject(null);
-	    		job.finish();
-    		}
-    		catch (ConnectionFailedException e)
-    		{
-    			System.err.println("Unable to connect with the slave: " + e.getMessage());
-    			return;
-    		}
-    		catch (IOException e)
-    		{
-    			System.err.println("Unable send the job to the slave: " + e.getMessage());
-    			return;	
-    		}
-		}
 		/*
 		 * Close the receive port.
 		 */
@@ -111,20 +80,10 @@ public class Master implements MessageUpcall{
 			this.bound ++;
             System.out.print(" " + bound);
             
-            //DEBUG
-            /*try {
-				System.in.read();
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}*/
-            
             cube.setBound(bound);
             int tmpSolutions = solutions(cube, cache);
             
-            synchronized (syncSolution) {
-            	this.solutions += tmpSolutions;
-			}
+            this.solutions += tmpSolutions;
             
             /*
              * Wait for all the jobs to terminate.
@@ -132,15 +91,24 @@ public class Master implements MessageUpcall{
             System.err.println("Wait termination. . .");
             while ( this.givenJobs > 0 )
             {
-            	/*try 
+            	try
             	{
-					//monitor.wait();
+	            	ReadMessage result = receive.receive();
+	            	ResultMessage message = (ResultMessage) result.readObject();
+	            	if ( message.result != -1)
+	        		{
+	        			this.solutions += message.result;
+	        			this.givenJobs--;
+	        		}
+            	}
+            	catch (ClassNotFoundException e1) 
+				{
+					System.err.println("During result.readObject(): " + e1.getMessage());
 				} 
-            	catch (InterruptedException e) 
-            	{
-            		System.err.println("Interrupted: " + e.getMessage());
-        			return;	
-				}*/
+				catch (IOException e1) 
+				{
+					System.err.println("During result.readObject() or receive.receive(): " + e1.getMessage());
+				}
             }
             System.err.println("Termination. . .");
 		}
@@ -158,10 +126,54 @@ public class Master implements MessageUpcall{
             return 0;
         }
         
-        if ( ! slaves.isEmpty() &&  ! (cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < 3))
+        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < 3))
     	{
-    		sendCube(cube);
-    		return 0;
+        	/*
+        	 * check
+        	 */
+        	ReadMessage result = null;
+			try 
+			{
+				result = receive.poll();
+			} 
+			catch (IOException e1) 
+			{
+				System.err.println("During receive.poll(): " + e1.getMessage());
+			}
+        	if ( result != null)
+        	{
+        		ResultMessage message = null;
+				try 
+				{
+					message = (ResultMessage) result.readObject();
+				} 
+				catch (ClassNotFoundException e1) 
+				{
+					System.err.println("During result.readObject(): " + e1.getMessage());
+				} 
+				catch (IOException e1) 
+				{
+					System.err.println("During result.readObject(): " + e1.getMessage());
+				}
+        		
+        		if ( message.result != -1)
+        		{
+        			this.solutions += message.result;
+        			this.givenJobs--;
+        		}
+        		
+	    		sendCube(message.receivePort,cube);
+	    		
+	    		try 
+	    		{
+					result.finish();
+				} 
+	    		catch (IOException e) 
+	    		{
+					System.err.println("Exception during result.finish(): " + e.getMessage());
+				}
+	    		return 0;
+        	}
     	}
         // generate all possible cubes from this one by twisting it in
         // every possible way. Gets new objects from the cache
@@ -182,12 +194,12 @@ public class Master implements MessageUpcall{
         return result;
     }
 	
-	public void sendCube (Cube cube)
+	public void sendCube (ReceivePortIdentifier port,  Cube cube)
 	{
 		try
 		{
     		SendPort send = myIbis.createSendPort(masterToSlavePortType);
-    		send.connect(slaves.poll());
+    		send.connect(port);
     		
     		WriteMessage job = send.newMessage();
     		job.writeObject(cube);
@@ -195,16 +207,10 @@ public class Master implements MessageUpcall{
     		
     		send.close();
     		
-    		synchronized (syncJobs) 
-    		{
-				this.givenJobs++;
-			}
+    		this.givenJobs++;
 		}
 		catch (ConnectionFailedException e)
 		{
-			/*
-			 * TODO: handle this.
-			 */
 			System.err.println("Unable to connect with the slave: " + e.getMessage());
 			return;
 		}
@@ -212,34 +218,6 @@ public class Master implements MessageUpcall{
 		{
 			System.err.println("Unable send the job to the slave: " + e.getMessage());
 			return;	
-		}
-	}
-	
-	@Override
-	public void upcall(ReadMessage message) throws IOException, ClassNotFoundException {
-		
-		/*
-		 * 
-		 */
-		ResultMessage resultMessage = (ResultMessage) message.readObject();
-		message.finish();
-		
-		if ( resultMessage.result > 0 )
-		{
-			synchronized (syncSolution) {
-				this.solutions += resultMessage.result;
-			}
-		}
-		
-		if ( resultMessage.result != -1 )
-		{
-			synchronized (syncJobs) {
-				givenJobs --;
-			}
-		}
-		
-		synchronized (slaves) {
-			slaves.add(resultMessage.receivePort);
 		}
 	}
 }
