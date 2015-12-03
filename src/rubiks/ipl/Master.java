@@ -132,6 +132,7 @@ public class Master implements MessageUpcall{
             /*
              * Wait for all the jobs to terminate.
              */
+            System.err.println("Wait termination. . .");
             while ( this.givenJobs > 0 )
             {
             	/*try 
@@ -144,6 +145,7 @@ public class Master implements MessageUpcall{
         			return;	
 				}*/
             }
+            System.err.println("Termination. . .");
 		}
 		System.out.println();
         System.out.println("Solving cube possible in " + this.solutions + " ways of "
