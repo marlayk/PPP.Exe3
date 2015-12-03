@@ -97,7 +97,9 @@ public class Slave {
 				ReadMessage job = receive.receive();
 				System.err.println("Slave: received. . .");
 		        this.currentCube = (Cube) job.readObject();
+				System.err.println("Slave: cube red. . .");
 		        job.finish();
+				System.err.println("Slave: finish. . .");
 		        receive.close();
 
 				System.err.println("Slave: job received, check. . .");
