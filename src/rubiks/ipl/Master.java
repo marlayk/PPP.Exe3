@@ -232,10 +232,8 @@ public class Master{
     		WriteMessage job = send.newMessage();
     		job.writeObject(cube);
     		job.send();
-    		
-    		send.close();
-    		
     		this.givenJobs++;
+    		//send.close();
 		}
 		catch (ConnectionFailedException e)
 		{
