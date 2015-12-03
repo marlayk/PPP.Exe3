@@ -140,8 +140,7 @@ public class Master{
             }
 		}
 		System.out.println();
-        System.out.println("Solving cube possible in " + this.solutions + " ways of "
-                + bound + " steps");	
+        System.out.println("Solving cube possible in " + this.solutions + " ways of " + bound + " steps");	
 	}
 
 	private int solutions(Cube cube, CubeCache cache) {
@@ -153,7 +152,7 @@ public class Master{
             return 0;
         }
         //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 4) && !(cube.getBound() - cube.getTwists() < 1000) )
+        if ( !(cube.getTwists() < 4) && !(cube.getBound() - cube.getTwists() < 0) )
     	{
         	/*
         	 * check
