@@ -289,7 +289,7 @@ public class Master{
     		/*
     		 * Send the message. Asynch send.
     		 */
-    		writeMessage.send();
+    		writeMessage.finish();
     		/*
     		 * Increase the number of active jobs.
     		 */
