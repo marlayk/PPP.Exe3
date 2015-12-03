@@ -192,12 +192,13 @@ public class Master implements MessageUpcall{
     		WriteMessage job = send.newMessage();
     		job.writeObject(cube);
     		job.finish();
+    		
+    		send.close();
+    		
     		synchronized (syncJobs) 
     		{
 				this.givenJobs++;
 			}
-    		
-    		send.close();
 		}
 		catch (ConnectionFailedException e)
 		{
