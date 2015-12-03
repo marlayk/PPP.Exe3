@@ -199,6 +199,8 @@ public class Master implements MessageUpcall{
     		{
 				this.givenJobs++;
 			}
+    		
+    		send.close();
 		}
 		catch (ConnectionFailedException e)
 		{
