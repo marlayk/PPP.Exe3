@@ -46,6 +46,29 @@ public class Master{
 			System.err.println("Unable to create the receive port: " + e.getMessage());
 			return;
 		}
+		
+		/*
+		 * Wait for all the saves to be ready.
+		 */
+		int slavesN = myIbis.registry().getPoolSize() - 1;
+		while ( this.slaves.size() < slavesN)
+		{
+			try
+        	{
+            	ReadMessage result = receive.receive();
+            	ResultMessage message = (ResultMessage) result.readObject();
+            	this.slaves.add(message.receivePort);
+            	result.finish();
+        	}
+        	catch (ClassNotFoundException e1) 
+			{
+				System.err.println("During result.readObject(): " + e1.getMessage());
+			} 
+			catch (IOException e1) 
+			{
+				System.err.println("During result.readObject() or receive.receive(): " + e1.getMessage());
+			}
+		}
 		// solve
 		long start = System.currentTimeMillis();
 		this.Solve();
@@ -57,28 +80,6 @@ public class Master{
 		for ( ReceivePortIdentifier slave : slaves)
 		{
 			sendCube(slave, null);
-		}
-		
-		try
-		{
-			ReadMessage read;
-			do
-			{
-				read = receive.poll();
-				if ( read != null)
-				{
-					ResultMessage message = (ResultMessage) read.readObject();
-					sendCube(message.receivePort, null);
-				}
-			} while ( read != null );
-		} 
-		catch (ClassNotFoundException e1) 
-		{
-			System.err.println("During slaves quit: " + e1.getMessage());
-		} 
-		catch (IOException e1) 
-		{
-			System.err.println("During slaves quit: " + e1.getMessage());
 		}
 		/*
 		 * Close the receive port.
@@ -123,11 +124,8 @@ public class Master{
             	{
 	            	ReadMessage result = receive.receive();
 	            	ResultMessage message = (ResultMessage) result.readObject();
-	            	if ( message.result != -1)
-	        		{
-	        			this.solutions += message.result;
-	        			this.givenJobs--;
-	        		}
+        			this.solutions += message.result;
+        			this.givenJobs--;
 	            	this.slaves.add(message.receivePort);
 	            	result.finish();
             	}
@@ -190,11 +188,8 @@ public class Master{
 					System.err.println("During result.readObject(): " + e1.getMessage());
 				}
         		
-        		if ( message.result != -1)
-        		{
-        			this.solutions += message.result;
-        			this.givenJobs--;
-        		}
+    			this.solutions += message.result;
+    			this.givenJobs--;
         		
 	    		sendCube(message.receivePort,cube);
 	    		

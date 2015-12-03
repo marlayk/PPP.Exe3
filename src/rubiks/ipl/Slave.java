@@ -92,7 +92,6 @@ public class Slave {
 			 */
 			try
 			{
-				System.err.println("Slave weits. . .");
 				ReadMessage job = receive.receive();
 		        this.currentCube = (Cube) job.readObject();
 		        job.finish();
