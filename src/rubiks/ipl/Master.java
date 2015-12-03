@@ -92,7 +92,6 @@ public class Master{
              */
             while ( this.givenJobs > 0 )
             {
-            	System.err.println("Master: " + this.bound + " waiting for " + this.givenJobs);
             	try
             	{
 	            	ReadMessage result = receive.receive();
@@ -129,7 +128,7 @@ public class Master{
             return 0;
         }
         
-        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < SEQUENTIAL_THRESHOLD))
+        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < bound - INITIAL_ITERATION))
     	{
         	/*
         	 * check
@@ -137,7 +136,6 @@ public class Master{
         	if ( !this.slaves.isEmpty() )
         	{
         		sendCube(this.slaves.poll(), cube);
-            	System.err.println("Master: " + cube.getBound() + " from queue " + this.givenJobs);
         		return 0;
         	}
         	
@@ -173,7 +171,6 @@ public class Master{
         		}
         		
 	    		sendCube(message.receivePort,cube);
-            	System.err.println("Master: " + this.bound + " from receive " + this.givenJobs);
 	    		
 	    		try 
 	    		{
