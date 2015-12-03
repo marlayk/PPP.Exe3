@@ -22,7 +22,7 @@ public class Rubiks {
 	static PortType slaveToMasterPortType = new PortType(PortType.CONNECTION_MANY_TO_ONE, PortType.COMMUNICATION_RELIABLE, 
 					PortType.RECEIVE_POLL, PortType.RECEIVE_EXPLICIT, PortType.SERIALIZATION_OBJECT);
 	
-	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT);
+	static IbisCapabilities ibisCapabilities = new IbisCapabilities(IbisCapabilities.ELECTIONS_STRICT, IbisCapabilities.CLOSED_WORLD);
 	
 	public static void printUsage() {
 		System.out.println("Rubiks Cube solver");
