@@ -127,7 +127,7 @@ public class Master{
             return 0;
         }
         
-        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < SEQUENTIAL_THRESHOLD))
+        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < bound - INITIAL_ITERATION))
     	{
         	/*
         	 * check
