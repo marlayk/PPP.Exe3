@@ -57,6 +57,7 @@ public class Master{
 		{
 			sendCube(slave, null);
 		}
+		
 		try
 		{
 			ReadMessage read;
@@ -152,7 +153,7 @@ public class Master{
             return 0;
         }
         //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 4) && !(cube.getBound() - cube.getTwists() < 3) )
+        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 5) )
     	{
         	/*
         	 * check
