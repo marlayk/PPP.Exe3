@@ -52,6 +52,13 @@ public class Master{
 		this.Solve();
 		long end = System.currentTimeMillis();
 		System.err.println("Solving cube took " + (end - start) + " milliseconds");
+		/*
+		 * Quit slaves.
+		 */
+		for ( ReceivePortIdentifier slave : slaves)
+		{
+			sendCube(slave, null);
+		}
 		
 		/*
 		 * Close the receive port.

@@ -115,6 +115,26 @@ public class Slave {
 				this.myResult = solutions(currentCube, cache);
 			}
 		} while ( this.currentCube != null);
+		
+		try 
+		{
+			send.close();
+		} 
+		catch (IOException e) 
+		{
+			System.err.println("Unable to close the send port: " + e.getMessage());
+			return;
+		}
+		
+		try 
+		{
+			receive.close();
+		} 
+		catch (IOException e) 
+		{
+			System.err.println("Unable to close the receive port: " + e.getMessage());
+			return;
+		}
 	}
 	
 	/**
