@@ -10,7 +10,7 @@ import ibis.ipl.*;
 public class Master{
 	
 	static final int INITIAL_ITERATION = 2;
-	
+	static final int SEQUENTIAL_THRESHOLD = 3;
 	Ibis myIbis;
 	Cube cube;
 	PortType masterToSlavePortType;
@@ -88,7 +88,6 @@ public class Master{
             /*
              * Wait for all the jobs to terminate.
              */
-            System.err.println("Wait termination. . .");
             while ( this.givenJobs > 0 )
             {
             	try
@@ -110,7 +109,6 @@ public class Master{
 					System.err.println("During result.readObject() or receive.receive(): " + e1.getMessage());
 				}
             }
-            System.err.println("Termination. . .");
 		}
 		System.out.println();
         System.out.println("Solving cube possible in " + this.solutions + " ways of "
@@ -126,7 +124,7 @@ public class Master{
             return 0;
         }
         
-        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < 3))
+        if ( !(cube.getTwists() < INITIAL_ITERATION) && !(cube.getBound() - cube.getTwists() < SEQUENTIAL_THRESHOLD))
     	{
         	/*
         	 * check
