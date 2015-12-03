@@ -173,7 +173,7 @@ public class Master{
             return 0;
         }
         //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 5) )
+        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 4) )
     	{
         	/*
         	 * If there are slaves waiting for jobs in the queue, send a job to the first one.
@@ -269,14 +269,14 @@ public class Master{
 	 * @param cube
 	 * 			The cube to be sent.
 	 */			
-	private void sendCube (ReceivePortIdentifier port,  Cube cube)
+	private void sendCube (ReceivePortIdentifier portId,  Cube cube)
 	{
 		try
 		{
 			/*
 			 * Look for the corresponding send port.
 			 */
-    		SendPort sendPort = this.sendPorts.get(port);
+    		SendPort sendPort = this.sendPorts.get(portId);
     		/*
     		 * Create a new message.
     		 */
@@ -286,7 +286,7 @@ public class Master{
     		 */
     		writeMessage.writeObject(cube);
     		/*
-    		 * Send the message. Asynch send.
+    		 * Send the message.
     		 */
     		writeMessage.finish();
     		/*
