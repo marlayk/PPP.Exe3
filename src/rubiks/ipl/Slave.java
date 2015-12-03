@@ -112,15 +112,15 @@ public class Slave {
 				/*
 				 * If there is a new job, solve it.
 				 */
-				if ( currentCube.getBound() == 6)
-				{
-					System.err.println("Slave: received 6.");
-				}
 				if ( currentCube.getBound() == 7)
 				{
 					System.err.println("Slave: received 7.");
 				}
 				this.myResult = solutions(currentCube, cache);
+				if ( currentCube.getBound() == 7)
+				{
+					System.err.println("Slave: solved 7.");
+				}
 			}
 		} while ( this.currentCube != null);
 	}
