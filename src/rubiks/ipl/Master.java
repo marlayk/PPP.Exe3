@@ -115,12 +115,12 @@ public class Master implements MessageUpcall{
             System.out.print(" " + bound);
             
             //DEBUG
-            try {
+            /*try {
 				System.in.read();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
-			}
+			}*/
             
             cube.setBound(bound);
             int tmpSolutions = solutions(cube, cache);
