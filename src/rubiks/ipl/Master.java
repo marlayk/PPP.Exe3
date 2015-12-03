@@ -1,6 +1,7 @@
 package rubiks.ipl;
 
 import java.io.IOException;
+import java.util.LinkedList;
 
 import ibis.ipl.*;
 
@@ -16,7 +17,8 @@ public class Master{
 	PortType masterToSlavePortType;
 	PortType slaveToMasterPortType;
 	CubeCache cache;
-	ReceivePort receive;
+	ReceivePort receive = null;
+	LinkedList<ReceivePortIdentifier> slaves;
 	int givenJobs = 0;
 	int solutions = 0;
 	int bound = 0;
@@ -28,12 +30,12 @@ public class Master{
 		this.masterToSlavePortType = masterToSlave;
 		this.slaveToMasterPortType = slaveToMaster;
 		this.cache = new CubeCache(cube.getSize());
+		this.slaves = new LinkedList<ReceivePortIdentifier>();
 	}
 	
 	public void Run()
 	{
 		//Init
-		receive = null;
 		
 		try 
 		{
@@ -99,6 +101,7 @@ public class Master{
 	        			this.solutions += message.result;
 	        			this.givenJobs--;
 	        		}
+	            	this.slaves.add(message.receivePort);
             	}
             	catch (ClassNotFoundException e1) 
 				{
@@ -129,6 +132,12 @@ public class Master{
         	/*
         	 * check
         	 */
+        	if ( !this.slaves.isEmpty() )
+        	{
+        		sendCube(this.slaves.poll(), cube);
+        		return 0;
+        	}
+        	
         	ReadMessage result = null;
 			try 
 			{
