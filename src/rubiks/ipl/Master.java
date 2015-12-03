@@ -19,6 +19,7 @@ public class Master implements MessageUpcall{
 	CubeCache cache;
 	LinkedList<ReceivePortIdentifier> slaves;
 	Object syncJobs = new Object();
+	Object monitor = new Object();
 	int givenJobs = 0;
 	Object syncSolution = new Object();
 	int solutions = 0;
@@ -135,7 +136,7 @@ public class Master implements MessageUpcall{
             {
             	try 
             	{
-					wait();
+					monitor.wait();
 				} 
             	catch (InterruptedException e) 
             	{
@@ -232,7 +233,7 @@ public class Master implements MessageUpcall{
 		{
 			synchronized (syncJobs) {
 				givenJobs --;
-				notify();
+				monitor.notify();
 			}
 		}
 		
