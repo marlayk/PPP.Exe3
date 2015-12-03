@@ -55,23 +55,24 @@ public class Slave {
 			return;
 		}
 		
+		/*
+		 * Create the receive port for the job.
+		 */
+		ReceivePort receive = null;
+		try 
+		{
+			receive = myIbis.createReceivePort(masterToSlavePortType, null);
+		} 
+		catch (IOException e) 
+		{
+			System.err.println("Unable to create the receive port: " + e.getMessage());
+			return;
+		}
+		receive.enableConnections();
 
 		do
 		{
-			/*
-			 * Create the receive port for the job.
-			 */
-			ReceivePort receive = null;
-			try 
-			{
-				receive = myIbis.createReceivePort(masterToSlavePortType, null);
-			} 
-			catch (IOException e) 
-			{
-				System.err.println("Unable to create the receive port: " + e.getMessage());
-				return;
-			}
-			receive.enableConnections();
+			
 			/*
 			 * Send the result (it will be just a request on the first iteration) to the server.
 			 */
@@ -94,7 +95,6 @@ public class Slave {
 				ReadMessage job = receive.receive();
 		        this.currentCube = (Cube) job.readObject();
 		        job.finish();
-		        receive.close();
 			}
 			catch ( IOException e)
 			{
