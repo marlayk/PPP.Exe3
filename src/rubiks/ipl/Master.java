@@ -57,7 +57,27 @@ public class Master{
 		{
 			sendCube(slave, null);
 		}
-		
+		try
+		{
+			ReadMessage read;
+			do
+			{
+				read = receive.poll();
+				if ( read != null)
+				{
+					ResultMessage message = (ResultMessage) read.readObject();
+					sendCube(message.receivePort, null);
+				}
+			} while ( read != null );
+		} 
+		catch (ClassNotFoundException e1) 
+		{
+			System.err.println("During slaves quit: " + e1.getMessage());
+		} 
+		catch (IOException e1) 
+		{
+			System.err.println("During slaves quit: " + e1.getMessage());
+		}
 		/*
 		 * Close the receive port.
 		 */
@@ -133,7 +153,7 @@ public class Master{
             return 0;
         }
         //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 1) && !(cube.getBound() - cube.getTwists() < 5) )
+        if ( !(cube.getTwists() < 4) && !(cube.getBound() - cube.getTwists() < 1000) )
     	{
         	/*
         	 * check
