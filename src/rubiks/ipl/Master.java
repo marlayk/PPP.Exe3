@@ -231,7 +231,7 @@ public class Master{
     		
     		WriteMessage job = send.newMessage();
     		job.writeObject(cube);
-    		job.finish();
+    		job.send();
     		
     		send.close();
     		
