@@ -1,5 +1,7 @@
 package rubiks.ipl;
 
+
+import java.io.Serializable;
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
@@ -7,7 +9,11 @@ import ibis.ipl.ReceivePortIdentifier;
  *
  * This class represent a message sent from the slave to the master.
  */
-public class ResultMessage {
+public class ResultMessage implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/*
 	 * Result of the computation.
 	 */
