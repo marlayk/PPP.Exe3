@@ -29,6 +29,7 @@ public class Master{
 		this.slaveToMasterPortType = slaveToMaster;
 		this.cache = new CubeCache(cube.getSize());
 		this.slaves = new LinkedList<ReceivePortIdentifier>();
+		System.err.println(cube.generateChildren(cache).length);
 	}
 	
 	public void Run()
