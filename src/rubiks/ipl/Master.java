@@ -87,7 +87,7 @@ public class Master{
 		waitForSlaves();
 		
 		/*
-		 * Solve
+		 * Solve and take the timestamp.
 		 */
 		long start = System.currentTimeMillis();
 		this.Solve();
