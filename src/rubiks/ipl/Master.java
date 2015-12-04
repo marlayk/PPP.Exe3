@@ -3,7 +3,6 @@ package rubiks.ipl;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Stack;
 import ibis.ipl.*;
 
 /**
@@ -35,7 +34,7 @@ public class Master{
 	 * The jobs stack.
 	 */
 	LinkedList<ReceivePortIdentifier> slaves = new LinkedList<ReceivePortIdentifier>();
-	Stack<Cube> jobs = new Stack<Cube>();
+	LinkedList<Cube> jobs = new LinkedList<Cube>();
 	/*
 	 * Variables used during the solution of the cube.
 	 * They indicate the current bound, the number of solution found and the number
@@ -137,6 +136,7 @@ public class Master{
             		jobs.push(ch);
             	}
             }
+            System.err.println("Jobs: " + jobs.size());
             /*
              * Solve.
              */
