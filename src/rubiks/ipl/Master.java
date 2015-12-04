@@ -9,7 +9,7 @@ import ibis.ipl.*;
  * This class represents a master.
  */
 public class Master{
-	static final int INITIAL_TWISTS = 1;
+	static final int INITIAL_TWISTS = 2;
 	/*
 	 * Ibis global parameters.
 	 */
@@ -134,7 +134,7 @@ public class Master{
             	if ( jobs.size() % poolSize == 0) break;
             	for ( int j = 0; j < jobs.size() % poolSize; j++)
             	{
-            		auxQueue.push(jobs.pop());
+            		auxQueue.push(jobs.pollLast());
             	}
             	while (! auxQueue.isEmpty())
             	{
@@ -142,7 +142,7 @@ public class Master{
 	            	Cube[] child = c.generateChildren(cache);
 	            	for ( Cube ch : child)
 	            	{
-	            		jobs.push(ch);
+	            		jobs.add(ch);
 	            	}
             	}
             }
