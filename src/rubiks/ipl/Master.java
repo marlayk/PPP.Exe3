@@ -9,7 +9,7 @@ import ibis.ipl.*;
  * This class represents a master.
  */
 public class Master{
-	static final int INITIAL_TWISTS = 2;
+	static final int INITIAL_TWISTS = 1;
 	/*
 	 * Ibis global parameters.
 	 */
