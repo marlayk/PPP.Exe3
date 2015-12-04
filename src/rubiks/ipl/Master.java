@@ -361,17 +361,17 @@ public class Master{
             	}
         	}
         }
-        
 	}
 	/**
 	 * Sends jobs to the slaves
 	 */
 	private void distributeJobs()
 	{
-		int maxJob = (int)Math.floor(jobs.size()/(slavesN+1));
+		int maxJob = (int)Math.ceil(jobs.size()/(slavesN+1));
 		Cube[][] distributedJobs = new Cube[slavesN][maxJob];
 		for (int i = 0; i < maxJob; i++)
 		{
+			auxQueue.add(jobs.pop());
 			for ( int j = 0; j < slavesN; j++ )
 			{
 				if ( !jobs.isEmpty())
@@ -379,7 +379,6 @@ public class Master{
 					distributedJobs[j][i] = jobs.pop();
 				}
 			}
-			auxQueue.add(jobs.pop());
 		}
 		for ( int i = 0; i < slavesN; i++)
 		{
