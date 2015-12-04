@@ -227,7 +227,7 @@ public class Master{
     		/*
     		 * Write the cube to send in the message.
     		 */
-    		writeMessage.writeObject(cube);
+    		writeMessage.writeObject(cubes);
     		/*
     		 * Send the message.
     		 */
