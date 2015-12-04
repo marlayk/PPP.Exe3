@@ -35,6 +35,7 @@ public class Master{
 	 */
 	LinkedList<ReceivePortIdentifier> slaves = new LinkedList<ReceivePortIdentifier>();
 	LinkedList<Cube> jobs = new LinkedList<Cube>();
+	LinkedList<Cube> auxQueue = new LinkedList<Cube>();
 	/*
 	 * Variables used during the solution of the cube.
 	 * They indicate the current bound, the number of solution found and the number
@@ -127,15 +128,25 @@ public class Master{
             /*
              * Generate jobs.
              */
-            while ( jobs.peek().getTwists() < Math.min(INITIAL_TWISTS, this.bound))
+            int poolSize = myIbis.registry().getPoolSize();
+            for(int i = 0; i <  Math.min(INITIAL_TWISTS, this.bound); i++)
             {
-            	Cube c = jobs.pop();
-            	Cube[] child = c.generateChildren(cache);
-            	for ( Cube ch : child)
+            	if ( jobs.size() % poolSize == 0) break;
+            	for ( int j = 0; j < jobs.size() % poolSize; j++)
             	{
-            		jobs.add(ch);
+            		auxQueue.push(jobs.pop());
+            	}
+            	while (! auxQueue.isEmpty())
+            	{
+	            	Cube c = auxQueue.pop();
+	            	Cube[] child = c.generateChildren(cache);
+	            	for ( Cube ch : child)
+	            	{
+	            		jobs.push(ch);
+	            	}
             	}
             }
+            System.err.println("Jobs: " + jobs.size());
             /*
              * Solve.
              */
