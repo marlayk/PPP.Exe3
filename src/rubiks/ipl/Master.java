@@ -11,7 +11,7 @@ import ibis.ipl.*;
  * This class represents a master.
  */
 public class Master{
-	static final int INITIAL_TWISTS = 1;
+	static final int INITIAL_TWISTS = 2;
 	/*
 	 * Ibis global parameters.
 	 */
@@ -129,7 +129,7 @@ public class Master{
             /*
              * Generate jobs.
              */
-            while ( jobs.peek().getTwists() < INITIAL_TWISTS)
+            while ( jobs.peek().getTwists() < Math.min(INITIAL_TWISTS, this.bound))
             {
             	Cube c = jobs.pop();
             	Cube[] child = c.generateChildren(cache);
@@ -144,12 +144,6 @@ public class Master{
             while ( !jobs.isEmpty() )
             {
             	Cube c = jobs.pop();
-            	int remTwists = c.getBound() - c.getTwists();
-            	if ( remTwists < 5 )
-            	{
-            		this.solutions += solutions(c, cache);
-            		continue;
-            	}
             	/*
             	 * If there are slaves in the queue.
             	 */
