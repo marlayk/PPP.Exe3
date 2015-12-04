@@ -9,7 +9,7 @@ import ibis.ipl.*;
  * This class represents a master.
  */
 public class Master{
-	static final int INITIAL_TWISTS = 2;
+	static final int INITIAL_TWISTS = 3;
 	static final int SEQUENTIAL_THRESHOLD = 3;
 	/*
 	 * Ibis global parameters.
@@ -360,10 +360,6 @@ public class Master{
             		jobs.add(ch);
             	}
         	}
-        	/*
-        	 * 
-        	 */
-        	if ( jobs.size()  < poolSize ) i--;
         }
 	}
 	/**
