@@ -361,7 +361,6 @@ public class Master{
             	}
         	}
         }
-        System.err.println("Jobs: " + jobs.size());
         
 	}
 	/**
