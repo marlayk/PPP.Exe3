@@ -360,6 +360,10 @@ public class Master{
             		jobs.add(ch);
             	}
         	}
+        	/*
+        	 * I want at least two different twists in my jobs queue,
+        	 */
+        	if ( jobs.size()  < poolSize ) i--;
         }
 	}
 	/**
