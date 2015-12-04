@@ -123,7 +123,7 @@ public class Master{
             System.out.print(" " + bound);
             
             cube.setBound(bound);
-            jobs.push(cube);
+            jobs.add(cube);
             /*
              * Generate jobs.
              */
@@ -133,7 +133,7 @@ public class Master{
             	Cube[] child = c.generateChildren(cache);
             	for ( Cube ch : child)
             	{
-            		jobs.push(ch);
+            		jobs.add(ch);
             	}
             }
             System.err.println("Jobs: " + jobs.size());
