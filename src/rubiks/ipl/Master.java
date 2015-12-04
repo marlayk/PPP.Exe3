@@ -153,11 +153,11 @@ public class Master{
             while ( !jobs.isEmpty() )
             {
             	Cube c = jobs.pop();
-            	if ( c.getBound() - c.getTwists() < 3 )
+            	/*if ( c.getBound() - c.getTwists() < 3 )
             	{
             		this.solutions += solutions(c, cache);
             		continue;
-            	}
+            	}*/
             	
 
             	/*
