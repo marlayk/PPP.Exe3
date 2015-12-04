@@ -146,7 +146,7 @@ public class Master{
             	/*
             	 * If there are slaves in the queue.
             	 */
-            	if ( c.getBound() - c.getTwists() < 4 )
+            	if ( c.getBound() - c.getTwists() < 3 )
             	{
             		this.solutions += solutions(c, cache);
             		continue;
