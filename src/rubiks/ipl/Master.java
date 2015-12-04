@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Stack;
-
 import ibis.ipl.*;
 
 /**
@@ -147,6 +146,13 @@ public class Master{
             	/*
             	 * If there are slaves in the queue.
             	 */
+            	if ( c.getBound() - c.getTwists() < 3 )
+            	{
+            		this.solutions += solutions(c, cache);
+            		continue;
+            	}
+            	
+            	
             	if ( ! slaves.isEmpty() )
             	{
             		sendCube(slaves.poll(), c);
