@@ -3,6 +3,7 @@ package rubiks.ipl;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Stack;
 
 import ibis.ipl.*;
 
@@ -10,7 +11,7 @@ import ibis.ipl.*;
  * This class represents a master.
  */
 public class Master{
-	
+	static final int INITIAL_TWISTS = 1;
 	/*
 	 * Ibis global parameters.
 	 */
@@ -32,8 +33,10 @@ public class Master{
 	HashMap<ReceivePortIdentifier, SendPort> sendPorts = new HashMap<ReceivePortIdentifier, SendPort>();
 	/*
 	 * The slaves queue.
+	 * The jobs stack.
 	 */
 	LinkedList<ReceivePortIdentifier> slaves = new LinkedList<ReceivePortIdentifier>();
+	Stack<Cube> jobs = new Stack<Cube>();
 	/*
 	 * Variables used during the solution of the cube.
 	 * They indicate the current bound, the number of solution found and the number
@@ -122,10 +125,66 @@ public class Master{
             System.out.print(" " + bound);
             
             cube.setBound(bound);
-            int tmpSolutions = solutions(cube, cache);
-            
-            this.solutions += tmpSolutions;
-            
+            jobs.push(cube);
+            /*
+             * Generate jobs.
+             */
+            while ( jobs.peek().getTwists() < INITIAL_TWISTS)
+            {
+            	Cube c = jobs.pop();
+            	Cube[] child = c.generateChildren(cache);
+            	for ( Cube ch : child)
+            	{
+            		jobs.push(ch);
+            	}
+            }
+            /*
+             * Solve.
+             */
+            while ( !jobs.isEmpty() )
+            {
+            	Cube c = jobs.pop();
+            	/*
+            	 * If there are slaves in the queue.
+            	 */
+            	if ( ! slaves.isEmpty() )
+            	{
+            		sendCube(slaves.poll(), c);
+            		continue;
+            	}
+            	/*
+            	 * If there are slaves who asked for a job.
+            	 */
+            	try
+            	{
+                	ReadMessage read = null;
+                	read = receive.poll();
+                	if ( read != null )
+                	{
+                		ResultMessage result = (ResultMessage)read.readObject();
+                		read.finish();
+                		
+                		this.solutions += result.result;
+                		this.givenJobs--;
+                		
+                		sendCube(result.receivePort, c);
+                		continue;
+                	}
+            	}
+            	catch (ClassNotFoundException e1) 
+				{
+					System.err.println("During result.readObject(): " + e1.getMessage());
+				} 
+				catch (IOException e1) 
+				{
+					System.err.println("During result.readObject() or receive.receive(): " + e1.getMessage());
+				}
+            	
+            	/*
+            	 * otherwise, solve.
+            	 */
+            	this.solutions += solutions(c, cache);
+            }
             /*
              * Wait for all the jobs to terminate.
              */
@@ -164,7 +223,7 @@ public class Master{
      *            cache of cubes used for new cube objects
      * @return the number of solutions found locally.
      */
-	private int solutions(Cube cube, CubeCache cache) {
+	private static int solutions(Cube cube, CubeCache cache) {
         if (cube.isSolved()) {
             return 1;
         }
@@ -172,80 +231,9 @@ public class Master{
         if (cube.getTwists() >= cube.getBound()) {
             return 0;
         }
-        
-        //TODO: Giocare qui.
-        if ( !(cube.getTwists() < 2) && !(cube.getBound() - cube.getTwists() < 6) )
-    	{
-        	/*
-        	 * If there are slaves waiting for jobs in the queue, send a job to the first one.
-        	 */
-        	if ( !this.slaves.isEmpty() )
-        	{
-        		sendCube(this.slaves.poll(), cube);
-        		return -1;
-        	}
-        	
-        	/*
-        	 * If a slave just sent a result back, send him another job.
-        	 */
-        	ReadMessage result = null;
-			try 
-			{
-				result = receive.poll();
-			} 
-			catch (IOException e1) 
-			{
-				System.err.println("During receive.poll(): " + e1.getMessage());
-			}
-        	if ( result != null)
-        	{
-        		/*
-        		 * Read the result.
-        		 */
-        		ResultMessage message = null;
-				try 
-				{
-					message = (ResultMessage) result.readObject();
-				} 
-				catch (ClassNotFoundException e1) 
-				{
-					System.err.println("During result.readObject(): " + e1.getMessage());
-				} 
-				catch (IOException e1) 
-				{
-					System.err.println("During result.readObject(): " + e1.getMessage());
-				}
-        		/*
-        		 * Update the current solution and the number of jobs.
-        		 */
-    			this.solutions += message.result;
-    			this.givenJobs--;
-        		/*
-        		 * Send a new job to the slave.
-        		 */
-	    		sendCube(message.receivePort,cube);
-	    		/*
-	    		 * Indicate that the message can be re-used.
-	    		 */
-	    		try 
-	    		{
-					result.finish();
-				} 
-	    		catch (IOException e) 
-	    		{
-					System.err.println("Exception during result.finish(): " + e.getMessage());
-				}
-	    		return -1;
-        	}
-    	}
-        /*
-         * If the job has to be solved locally, then the used approach is the recoursive one.
-         */
-        /*
-         * generate all possible cubes from this one by twisting it in
-         *
-         * every possible way. Gets new objects from the cache
-         */
+
+        // generate all possible cubes from this one by twisting it in
+        // every possible way. Gets new objects from the cache
         Cube[] children = cube.generateChildren(cache);
 
         int result = 0;
@@ -256,11 +244,8 @@ public class Master{
             if (childSolutions > 0) {
                 result += childSolutions;
             }
-            if ( childSolutions != -1)
-            {
-	            // put child object in cache if has not been sent to a slave.
-	            cache.put(child);
-            }
+            // put child object in cache
+            cache.put(child);
         }
 
         return result;
@@ -369,7 +354,6 @@ public class Master{
 			sendCube(slave, null);
 		}
 	}
-	
 	/**
 	 * This method closed both send and receive ports.
 	 */
