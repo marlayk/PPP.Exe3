@@ -360,6 +360,10 @@ public class Master{
             		jobs.add(ch);
             	}
         	}
+        	/*
+        	 * 
+        	 */
+        	if ( jobs.size()  < poolSize ) i--;
         }
 	}
 	/**
