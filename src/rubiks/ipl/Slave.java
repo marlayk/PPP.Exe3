@@ -14,7 +14,7 @@ public class Slave {
 	PortType masterToSlavePortType;
 	PortType slaveToMasterPortType;
 	CubeCache cache;
-	Cube currentCube;
+	Cube currentCubes[];
 	int myResult;
 	
 	
@@ -25,8 +25,8 @@ public class Slave {
 		this.masterToSlavePortType = masterToSlave;
 		this.slaveToMasterPortType = slaveToMaster;
 		this.cache = new CubeCache(cubeSize);
-		this.myResult = -1;
-		this.currentCube = null;
+		this.myResult = 0;
+		this.currentCubes = null;
 	}
 	
 	public void Run()
@@ -69,31 +69,31 @@ public class Slave {
 			return;
 		}
 		receive.enableConnections();
-
+		
+		/*
+		 * Send a message to the server, asking for jobs.
+		 */
+		try 
+		{
+			 WriteMessage result = send.newMessage();
+		     result.writeObject(receive.identifier());
+		     result.finish();
+		}
+		catch ( IOException e)
+		{
+			System.err.println("Unable to send the result: " + e.getMessage());
+			return;
+		}
+		
 		do
 		{
-			
-			/*
-			 * Send the result (it will be just a request on the first iteration) to the server.
-			 */
-			try 
-			{
-				 WriteMessage result = send.newMessage();
-			     result.writeObject(new ResultMessage(myResult, receive.identifier()));
-			     result.finish();
-			}
-			catch ( IOException e)
-			{
-				System.err.println("Unable to send the result: " + e.getMessage());
-				return;
-			}
 			/*
 			 * Wait for new jobs.
 			 */
 			try
 			{
 				ReadMessage job = receive.receive();
-		        this.currentCube = (Cube) job.readObject();
+		        this.currentCubes = (Cube[]) job.readObject();
 		        job.finish();
 			}
 			catch ( IOException e)
@@ -107,14 +107,31 @@ public class Slave {
 				return;
 			}
 			
-			if ( this.currentCube != null)
+			if ( this.currentCubes != null)
 			{
 				/*
 				 * If there is a new job, solve it.
 				 */
-				this.myResult = solutions(currentCube, cache);
+				for ( Cube currentCube : currentCubes)
+				{
+					this.myResult += solutions(currentCube, cache);
+				}
+				/*
+				 * Send the result back.
+				 */
+				try 
+				{
+					 WriteMessage result = send.newMessage();
+				     result.writeInt(myResult);
+				     result.finish();
+				}
+				catch ( IOException e)
+				{
+					System.err.println("Unable to send the result: " + e.getMessage());
+					return;
+				}
 			}
-		} while ( this.currentCube != null);
+		} while ( this.currentCubes != null);
 		
 		try 
 		{

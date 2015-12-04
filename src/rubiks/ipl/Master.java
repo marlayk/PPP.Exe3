@@ -1,8 +1,8 @@
 package rubiks.ipl;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.LinkedList;
+
 import ibis.ipl.*;
 
 /**
@@ -10,6 +10,7 @@ import ibis.ipl.*;
  */
 public class Master{
 	static final int INITIAL_TWISTS = 2;
+	static final int SEQUENTIAL_THRESHOLD = 3;
 	/*
 	 * Ibis global parameters.
 	 */
@@ -28,23 +29,24 @@ public class Master{
 	 * Receive and send ports.
 	 */
 	ReceivePort receive = null;
-	HashMap<ReceivePortIdentifier, SendPort> sendPorts = new HashMap<ReceivePortIdentifier, SendPort>();
+	LinkedList<SendPort> sendPorts = new LinkedList<SendPort>();
 	/*
-	 * The slaves queue.
 	 * The jobs stack.
 	 */
-	LinkedList<ReceivePortIdentifier> slaves = new LinkedList<ReceivePortIdentifier>();
 	LinkedList<Cube> jobs = new LinkedList<Cube>();
 	LinkedList<Cube> auxQueue = new LinkedList<Cube>();
 	/*
 	 * Variables used during the solution of the cube.
 	 * They indicate the current bound, the number of solution found and the number
-	 * of jobs that slaves are executin and the master should wait for. 
+	 * of jobs that slaves that are idle. 
 	 */
-	int givenJobs = 0;
+	int slavesAvailable = 0;
 	int solutions = 0;
 	int bound = 0;
-	
+	/*
+	 * The number of slaves in the pool.
+	 */
+	int slavesN;
 	/**
 	 * Creates a new Master.
 	 * 
@@ -70,6 +72,10 @@ public class Master{
 		 * Initialization of the local cache.
 		 */
 		this.cache = new CubeCache(cube.getSize());
+		/*
+		 * The number of slaves is the size of the pool, minus the master.
+		 */
+		slavesN = myIbis.registry().getPoolSize() - 1;
 	}
 	public void Run()
 	{
@@ -128,97 +134,33 @@ public class Master{
             /*
              * Generate jobs.
              */
-            int poolSize = myIbis.registry().getPoolSize();
-            for(int i = 0; i <  Math.min(INITIAL_TWISTS, this.bound); i++)
-            {
-            	if ( jobs.size() % poolSize == 0) break;
-            	int modulo = jobs.size() % poolSize;
-            	for ( int j = 0; j < modulo; j++)
-            	{
-            		auxQueue.push(jobs.pollLast());
-            	}
-            	while (! auxQueue.isEmpty())
-            	{
-	            	Cube c = auxQueue.pop();
-	            	Cube[] child = c.generateChildren(cache);
-	            	for ( Cube ch : child)
-	            	{
-	            		jobs.add(ch);
-	            	}
-            	}
-            }
+            generateJobs();
+            /*
+             * Distribute Jobs
+             */
+            distributeJobs();
             /*
              * Solve.
              */
             while ( !jobs.isEmpty() )
             {
-            	Cube c = jobs.pop();
-            	/*if ( c.getBound() - c.getTwists() < 3 )
-            	{
-            		this.solutions += solutions(c, cache);
-            		continue;
-            	}*/
-            	
-
             	/*
-            	 * If there are slaves in the queue.
+            	 * Solve.
             	 */
-            	if ( ! slaves.isEmpty() )
-            	{
-            		sendCube(slaves.poll(), c);
-            		continue;
-            	}
-            	/*
-            	 * If there are slaves who asked for a job.
-            	 */
-            	try
-            	{
-                	ReadMessage read = null;
-                	read = receive.poll();
-                	if ( read != null )
-                	{
-                		ResultMessage result = (ResultMessage)read.readObject();
-                		read.finish();
-                		
-                		this.solutions += result.result;
-                		this.givenJobs--;
-                		
-                		sendCube(result.receivePort, c);
-                		continue;
-                	}
-            	}
-            	catch (ClassNotFoundException e1) 
-				{
-					System.err.println("During result.readObject(): " + e1.getMessage());
-				} 
-				catch (IOException e1) 
-				{
-					System.err.println("During result.readObject() or receive.receive(): " + e1.getMessage());
-				}
-            	
-            	/*
-            	 * otherwise, solve.
-            	 */
-            	this.solutions += solutions(c, cache);
+            	this.solutions += solutions(jobs.pop(), cache);
             }
             /*
              * Wait for all the jobs to terminate.
              */
-            while ( this.givenJobs > 0 )
+            while ( this.slavesAvailable < this.slavesN )
             {
             	try
             	{
 	            	ReadMessage result = receive.receive();
-	            	ResultMessage message = (ResultMessage) result.readObject();
-        			this.solutions += message.result;
-        			this.givenJobs--;
-	            	this.slaves.add(message.receivePort);
+        			this.solutions += result.readInt();
+        			this.slavesAvailable++;
 	            	result.finish();
             	}
-            	catch (ClassNotFoundException e1) 
-				{
-					System.err.println("During result.readObject(): " + e1.getMessage());
-				} 
 				catch (IOException e1) 
 				{
 					System.err.println("During result.readObject() or receive.receive(): " + e1.getMessage());
@@ -274,14 +216,10 @@ public class Master{
 	 * @param cube
 	 * 			The cube to be sent.
 	 */			
-	private void sendCube (ReceivePortIdentifier portId,  Cube cube)
+	private void send (SendPort sendPort,  Cube[] cubes)
 	{
 		try
 		{
-			/*
-			 * Look for the corresponding send port.
-			 */
-    		SendPort sendPort = this.sendPorts.get(portId);
     		/*
     		 * Create a new message.
     		 */
@@ -297,7 +235,7 @@ public class Master{
     		/*
     		 * Increase the number of active jobs.
     		 */
-    		this.givenJobs++;
+    		this.slavesAvailable--;
 		}
 		catch (IOException e)
 		{
@@ -311,13 +249,8 @@ public class Master{
 	 */
 	private void waitForSlaves()
 	{
-		/*
-		 * The number of slaves is the size of the pool, minus the master.
-		 */
-		int slavesN = myIbis.registry().getPoolSize() - 1;
 		
-		
-		while ( this.slaves.size() < slavesN)
+		while ( this.slavesAvailable < slavesN)
 		{
 			try
         	{
@@ -328,11 +261,7 @@ public class Master{
             	/*
             	 * Read the object.
             	 */
-            	ResultMessage resultMessage = (ResultMessage) readMessage.readObject();
-            	/*
-            	 * Add the new slave in the queue.
-            	 */
-            	this.slaves.add(resultMessage.receivePort);
+            	ReceivePortIdentifier receivePortID = (ReceivePortIdentifier) readMessage.readObject();
             	/*
             	 * Create a new SendPort for the given slave.
             	 */
@@ -340,15 +269,19 @@ public class Master{
             	/*
             	 * Connect it.
             	 */
-            	sendPort.connect(resultMessage.receivePort);
+            	sendPort.connect(receivePortID);
             	/*
             	 * Put it in the map.
             	 */
-            	this.sendPorts.put(resultMessage.receivePort, sendPort);
+            	this.sendPorts.add(sendPort);
             	/*
             	 * Indicate that the message can be re-used.
             	 */
             	readMessage.finish();
+            	/*
+            	 * Increase num of slaves.
+            	 */
+            	this.slavesAvailable++;
         	}
         	catch (ClassNotFoundException e1) 
 			{
@@ -365,9 +298,9 @@ public class Master{
 	 */
 	private void quitSlaves()
 	{
-		for ( ReceivePortIdentifier slave : slaves)
+		for ( SendPort sendPort : sendPorts)
 		{
-			sendCube(slave, null);
+			send(sendPort, null);
 		}
 	}
 	/**
@@ -384,7 +317,7 @@ public class Master{
 			/*
 			 * Iterate on sending ports.
 			 */
-			for ( SendPort port : sendPorts.values())
+			for ( SendPort port : sendPorts)
 			{
 				port.close();
 			}
@@ -393,6 +326,70 @@ public class Master{
 		{
 			System.err.println("Unable to close the ports: " + e.getMessage());
 			return;
+		}
+	}
+	/**
+	 * Generates the jobs for the current iteration.
+	 */
+	private void generateJobs()
+	{
+		int poolSize = slavesN + 1;
+		/*
+		 * I want to perform at most INITIAL_TWISTS twists.
+		 */
+        for(int i = 0; i <  Math.min(INITIAL_TWISTS, this.bound); i++)
+        {
+        	/*
+        	 * If the jobs can be distributed in balanced way, stop.
+        	 */
+        	if ( jobs.size() % poolSize == 0) break;
+        	/*
+        	 * Make another step in jobs that can't be distributed in balanced way.
+        	 */
+        	int modulo = jobs.size() % poolSize;
+        	for ( int j = 0; j < modulo; j++)
+        	{
+        		auxQueue.push(jobs.pollLast());
+        	}
+        	while (! auxQueue.isEmpty())
+        	{
+            	Cube c = auxQueue.pop();
+            	Cube[] child = c.generateChildren(cache);
+            	for ( Cube ch : child)
+            	{
+            		jobs.add(ch);
+            	}
+        	}
+        }
+        
+	}
+	/**
+	 * Sends jobs to the slaves
+	 */
+	private void distributeJobs()
+	{
+		int maxJob = (int)Math.ceil(jobs.size()/(slavesN+1));
+		Cube[][] distributedJobs = new Cube[slavesN][maxJob];
+		for (int i = 0; i < maxJob; i++)
+		{
+			for ( int j = 0; j < slavesN; j++ )
+			{
+				if ( !jobs.isEmpty())
+				{
+					distributedJobs[j][i] = jobs.pop();
+				}
+			}
+			auxQueue.add(jobs.pop());
+		}
+		
+		for ( int i = 0; i < slavesN; i++)
+		{
+			send(sendPorts.get(i), distributedJobs[i]);
+		}
+		
+		while ( !auxQueue.isEmpty() )
+		{
+			jobs.add(auxQueue.pop());
 		}
 	}
 }
