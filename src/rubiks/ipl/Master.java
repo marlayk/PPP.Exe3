@@ -144,6 +144,12 @@ public class Master{
             while ( !jobs.isEmpty() )
             {
             	Cube c = jobs.pop();
+            	int remTwists = c.getBound() - c.getTwists();
+            	if ( remTwists < 5 )
+            	{
+            		this.solutions += solutions(c, cache);
+            		continue;
+            	}
             	/*
             	 * If there are slaves in the queue.
             	 */
