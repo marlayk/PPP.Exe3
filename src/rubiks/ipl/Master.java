@@ -209,12 +209,12 @@ public class Master{
         return result;
     }
 	/**
-	 * Sends the given cube to the indicated port.
+	 * Sends the given cube array to the indicated port.
 	 * 
 	 * @param port
 	 * 			The port identifier of the indicated receive port.
-	 * @param cube
-	 * 			The cube to be sent.
+	 * @param cubes
+	 * 			The cube array to be sent.
 	 */			
 	private void send (SendPort sendPort,  Cube[] cubes)
 	{
