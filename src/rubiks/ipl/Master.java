@@ -132,7 +132,8 @@ public class Master{
             for(int i = 0; i <  Math.min(INITIAL_TWISTS, this.bound); i++)
             {
             	if ( jobs.size() % poolSize == 0) break;
-            	for ( int j = 0; j < jobs.size() % poolSize; j++)
+            	int modulo = jobs.size() % poolSize;
+            	for ( int j = 0; j < modulo; j++)
             	{
             		auxQueue.push(jobs.pollLast());
             	}
@@ -153,16 +154,16 @@ public class Master{
             while ( !jobs.isEmpty() )
             {
             	Cube c = jobs.pop();
-            	/*
-            	 * If there are slaves in the queue.
-            	 */
             	if ( c.getBound() - c.getTwists() < 3 )
             	{
             		this.solutions += solutions(c, cache);
             		continue;
             	}
             	
-            	
+
+            	/*
+            	 * If there are slaves in the queue.
+            	 */
             	if ( ! slaves.isEmpty() )
             	{
             		sendCube(slaves.poll(), c);
