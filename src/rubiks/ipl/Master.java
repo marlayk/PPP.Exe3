@@ -121,6 +121,8 @@ public class Master{
 	 */
 	private void Solve() {
 		
+		System.out.print("Bound now:");
+		
 		while ( this.solutions == 0 )
 		{
 			/*
@@ -271,7 +273,7 @@ public class Master{
             	 */
             	sendPort.connect(receivePortID);
             	/*
-            	 * Put it in the map.
+            	 * Put it in the list.
             	 */
             	this.sendPorts.add(sendPort);
             	/*
