@@ -136,7 +136,6 @@ public class Master{
             		jobs.add(ch);
             	}
             }
-            System.err.println("Jobs: " + jobs.size());
             /*
              * Solve.
              */
