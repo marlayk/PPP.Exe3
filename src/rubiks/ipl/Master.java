@@ -16,7 +16,7 @@ public class Master{
 	 * The INITIAL_TWISTS specify how many different sizes of cubes there will
 	 * be in the initial work queue for each bound.
 	 */
-	static final int INITIAL_TWISTS = 3;
+	static final int INITIAL_TWISTS = 4;
 	/*
 	 * Jobs that needs less than SEQUENTIAL_THRESHOLD twists are not even sent to slaves.
 	 */
