@@ -20,7 +20,7 @@ public class Master{
 	/*
 	 * Jobs that needs less than SEQUENTIAL_THRESHOLD twists are not even sent to slaves.
 	 */
-	static final int SEQUENTIAL_THRESHOLD = 1;
+	static final int SEQUENTIAL_THRESHOLD = 2;
 	/*
 	 * Ibis global parameters.
 	 */
