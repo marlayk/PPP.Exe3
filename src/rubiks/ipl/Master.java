@@ -19,7 +19,6 @@ public class Master{
 	static final int INITIAL_TWISTS = 3;
 	/*
 	 * Jobs that needs less than SEQUENTIAL_THRESHOLD twists are not even sent to slaves.
-	 * TODO: Use this, or remove it.
 	 */
 	static final int SEQUENTIAL_THRESHOLD = 2;
 	/*
@@ -399,7 +398,7 @@ public class Master{
 		/*
 		 * If the first (so the heaviest) job needs less then SEQUENTIAL_THRESHOLD twists, jobs are not distributed.
 		 */
-		if ( jobs.peek().getBound() - jobs.peek().getTwists() < SEQUENTIAL_THRESHOLD ) return;			
+		//if ( jobs.peek().getBound() - jobs.peek().getTwists() < SEQUENTIAL_THRESHOLD ) return;			
 		
 		int maxJob = (int)Math.ceil(jobs.size()/(slavesN+1));
 		Cube[][] distributedJobs = new Cube[slavesN][maxJob];
