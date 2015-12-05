@@ -6,10 +6,21 @@ import java.util.LinkedList;
 import ibis.ipl.*;
 
 /**
- * This class represents a master.
+ * @author Vittorio Massaro
+ * 
+ * A master able to solve the Rubik's Cube puzzle.
+ * The master creates new jobs, and distributes them in a balanced way among the slaves.
  */
 public class Master{
+	/*
+	 * The INITIAL_TWISTS specify how many different sizes of cubes there will
+	 * be in the initial work queue for each bound.
+	 */
 	static final int INITIAL_TWISTS = 3;
+	/*
+	 * Jobs that needs less than SEQUENTIAL_THRESHOLD twists are not even sent to slaves.
+	 * TODO: Use this, or remove it.
+	 */
 	static final int SEQUENTIAL_THRESHOLD = 3;
 	/*
 	 * Ibis global parameters.
@@ -31,7 +42,9 @@ public class Master{
 	ReceivePort receive = null;
 	LinkedList<SendPort> sendPorts = new LinkedList<SendPort>();
 	/*
-	 * The jobs stack.
+	 * jobs represents the jobs stack.
+	 * auxQueue is an auxiliary queue used for the job creation and distribution.
+	 * It's declared as a field in order to avoid to allocate it for each iteration.
 	 */
 	LinkedList<Cube> jobs = new LinkedList<Cube>();
 	LinkedList<Cube> auxQueue = new LinkedList<Cube>();
@@ -40,9 +53,9 @@ public class Master{
 	 * They indicate the current bound, the number of solution found and the number
 	 * of jobs that slaves that are idle. 
 	 */
-	int slavesAvailable = 0;
-	int solutions = 0;
 	int bound = 0;
+	int solutions = 0;
+	int slavesAvailable = 0;
 	/*
 	 * The number of slaves in the pool.
 	 */
@@ -94,18 +107,20 @@ public class Master{
 		}
 		
 		/*
-		 * Wait for all the saves to be ready.
+		 * Wait for all the saves to be ready, and initialize send ports.
 		 */
 		waitForSlaves();
 		
 		/*
-		 * Solve and take the timestamp.
+		 * Solve and take the duration time.
 		 */
 		long start = System.currentTimeMillis();
 		this.Solve();
 		long end = System.currentTimeMillis();
+		/*
+		 * Print the duration timer.
+		 */
 		System.err.println("Solving cube took " + (end - start) + " milliseconds");
-		
 		/*
 		 * Quit slaves.
 		 */
@@ -126,11 +141,13 @@ public class Master{
 		while ( this.solutions == 0 )
 		{
 			/*
-			 * Solve
+			 * Increase the bound and print it.
 			 */
 			this.bound ++;
             System.out.print(" " + bound);
-            
+            /*
+             * Set the bound and put the new cube in the jobs queue.
+             */
             cube.setBound(bound);
             jobs.add(cube);
             /*
@@ -147,17 +164,20 @@ public class Master{
             while ( !jobs.isEmpty() )
             {
             	/*
-            	 * Solve.
+            	 * Solve your jobs.
             	 */
             	this.solutions += solutions(jobs.pop(), cache);
             }
             /*
-             * Wait for all the jobs to terminate.
+             * Wait for all the slaves to terminate their jobs.
              */
             while ( this.slavesAvailable < this.slavesN )
             {
             	try
             	{
+            		/*
+            		 * Of course, the slaves will also send the number of solution they found.
+            		 */
 	            	ReadMessage result = receive.receive();
         			this.solutions += result.readInt();
         			this.slavesAvailable++;
@@ -235,7 +255,7 @@ public class Master{
     		 */
     		writeMessage.finish();
     		/*
-    		 * Increase the number of active jobs.
+    		 * Decrease the number of idle slaves.
     		 */
     		this.slavesAvailable--;
 		}
@@ -281,7 +301,7 @@ public class Master{
             	 */
             	readMessage.finish();
             	/*
-            	 * Increase num of slaves.
+            	 * Increase number of idle slaves.
             	 */
             	this.slavesAvailable++;
         	}
@@ -313,16 +333,16 @@ public class Master{
 		try 
 		{
 			/*
-			 * Close receive port.
-			 */
-			receive.close();
-			/*
-			 * Iterate on sending ports.
+			 * Close the sending ports.
 			 */
 			for ( SendPort port : sendPorts)
 			{
 				port.close();
 			}
+			/*
+			 * Close receive port.
+			 */
+			receive.close();
 		} 
 		catch (IOException e) 
 		{
@@ -337,9 +357,11 @@ public class Master{
 	{
 		int poolSize = slavesN + 1;
 		/*
-		 * I want to perform at most INITIAL_TWISTS twists.
+		 * I want to have in the job queue cubes with INITIAL_TWISTS different number of twists.
+		 * Of course, if the bound is less than that number, I can't execute more twists than the bound value.
 		 */
-        for(int i = 0; i <  Math.min(INITIAL_TWISTS, this.bound); i++)
+		int initial_twists = INITIAL_TWISTS;
+        for(int i = 0; i <  Math.min(initial_twists, this.bound); i++)
         {
         	/*
         	 * If the jobs can be distributed in balanced way, stop.
@@ -363,9 +385,10 @@ public class Master{
             	}
         	}
         	/*
-        	 * I want at least two different twists in my jobs queue,
+        	 * I want at least INITIAL_TWISTS different twists in my jobs queue.
+        	 * So, if all the jobs are going to be twisted again, I'll need an extra iteration.
         	 */
-        	if ( jobs.size()  < poolSize ) i--;
+        	if ( jobs.size()  < poolSize ) initial_twists++;
         }
 	}
 	/**
@@ -375,6 +398,10 @@ public class Master{
 	{
 		int maxJob = (int)Math.ceil(jobs.size()/(slavesN+1));
 		Cube[][] distributedJobs = new Cube[slavesN][maxJob];
+		/*
+		 * Jobs are distributed in a round robin fashion (this is necessary, since the jobs tend to be less heavy
+		 * while going to the end of the queue.
+		 */
 		for (int i = 0; i < maxJob; i++)
 		{
 			auxQueue.add(jobs.pop());
@@ -386,11 +413,16 @@ public class Master{
 				}
 			}
 		}
+		/*
+		 * Jobs are sent.
+		 */
 		for ( int i = 0; i < slavesN; i++)
 		{
 			send(sendPorts.get(i), distributedJobs[i]);
 		}
-		
+		/*
+		 * Jobs that are going to be executed by the master are put in the jobs queue.
+		 */
 		while ( !auxQueue.isEmpty() )
 		{
 			jobs.add(auxQueue.pop());

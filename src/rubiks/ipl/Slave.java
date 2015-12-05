@@ -5,19 +5,37 @@ import java.io.IOException;
 import ibis.ipl.*;
 
 /**
- * This class represents a slave.
+ * @author Vittorio Massaro
+ * 
+ * A slave able to execute some cubes in order to find a solution.
  */
 public class Slave {
-	
+	/*
+	 * Ibis global parameters.
+	 */
 	Ibis myIbis;
 	IbisIdentifier master;
 	PortType masterToSlavePortType;
 	PortType slaveToMasterPortType;
+	/*
+	 * The cache used.
+	 */
 	CubeCache cache;
-	Cube currentCubes[];
-	int myResult;
 	
-	
+	/**
+	 * Creates a new Slave.
+	 * 
+	 * @param ibis
+	 * 		The ibis identifier.
+	 * @param master
+	 * 		The master ibis identifier.
+	 * @param masterToSlave
+	 * 		The master-to-slave port type.
+	 * @param slaveToMaster
+	 * 		The slave-to-master port type.
+	 * @param cubeSize
+	 * 		The size of the cube to be solved.
+	 */
 	public Slave(Ibis ibis, IbisIdentifier master, PortType masterToSlave, PortType slaveToMaster, int cubeSize)
 	{
 		this.master = master;
@@ -25,16 +43,13 @@ public class Slave {
 		this.masterToSlavePortType = masterToSlave;
 		this.slaveToMasterPortType = slaveToMaster;
 		this.cache = new CubeCache(cubeSize);
-		this.myResult = 0;
-		this.currentCubes = null;
 	}
 	
 	public void Run()
 	{
 		/*
 		 * Create a sendPort and connect.
-		 */
-		
+		 */		
 		SendPort send = null;
 		try 
 		{
@@ -69,7 +84,6 @@ public class Slave {
 			return;
 		}
 		receive.enableConnections();
-		
 		/*
 		 * Send a message to the server, asking for jobs.
 		 */
@@ -84,7 +98,10 @@ public class Slave {
 			System.err.println("Unable to send the result: " + e.getMessage());
 			return;
 		}
-		
+		/*
+		 * The cubes to solve will be in this variable.
+		 */
+		Cube[] currentCubes = null;
 		do
 		{
 			/*
@@ -93,7 +110,7 @@ public class Slave {
 			try
 			{
 				ReadMessage job = receive.receive();
-		        this.currentCubes = (Cube[]) job.readObject();
+				currentCubes = (Cube[]) job.readObject();
 		        job.finish();
 			}
 			catch ( IOException e)
@@ -107,14 +124,15 @@ public class Slave {
 				return;
 			}
 			
-			if ( this.currentCubes != null)
+			if ( currentCubes != null)
 			{
 				/*
 				 * If there is a new job, solve it.
 				 */
+				int solutions = 0;
 				for ( Cube currentCube : currentCubes)
 				{
-					this.myResult += solutions(currentCube, cache);
+					solutions += solutions(currentCube, cache);
 				}
 				/*
 				 * Send the result back.
@@ -122,7 +140,7 @@ public class Slave {
 				try 
 				{
 					 WriteMessage result = send.newMessage();
-				     result.writeInt(myResult);
+				     result.writeInt(solutions);
 				     result.finish();
 				}
 				catch ( IOException e)
@@ -131,8 +149,10 @@ public class Slave {
 					return;
 				}
 			}
-		} while ( this.currentCubes != null);
-		
+		} while ( currentCubes != null);
+		/*
+		 * Close the sent port.
+		 */
 		try 
 		{
 			send.close();
@@ -142,7 +162,9 @@ public class Slave {
 			System.err.println("Unable to close the send port: " + e.getMessage());
 			return;
 		}
-		
+		/*
+		 * Close the receive port.
+		 */
 		try 
 		{
 			receive.close();
@@ -188,7 +210,6 @@ public class Slave {
             // put child object in cache
             cache.put(child);
         }
-
         return result;
     }
 }
