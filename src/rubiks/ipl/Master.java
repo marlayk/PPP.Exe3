@@ -396,6 +396,11 @@ public class Master{
 	 */
 	private void distributeJobs()
 	{
+		/*
+		 * If the first (so the heaviest) job needs less then SEQUENTIAL_THRESHOLD twists, jobs are not distributed.
+		 */
+		if ( jobs.peek().getTwists() < SEQUENTIAL_THRESHOLD ) return;			
+		
 		int maxJob = (int)Math.ceil(jobs.size()/(slavesN+1));
 		Cube[][] distributedJobs = new Cube[slavesN][maxJob];
 		/*
