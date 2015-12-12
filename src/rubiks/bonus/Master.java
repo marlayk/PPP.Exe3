@@ -133,6 +133,10 @@ public class Master{
 		 */
 		System.err.println("Solving cube took " + (end - start) + " milliseconds");
 		/*
+		 * Quit the pool.
+		 */
+		this.executor.shutdown();
+		/*
 		 * Quit slaves.
 		 */
 		quitSlaves();
@@ -369,11 +373,12 @@ public class Master{
         	/*
         	 * If the jobs can be distributed in balanced way, stop.
         	 */
-        	if ( jobs.size() % poolSize == 0) break;
+        	//if ( jobs.size() % poolSize == 0) break;
         	/*
         	 * Make another step in jobs that can't be distributed in balanced way.
         	 */
         	int modulo = jobs.size() % poolSize;
+        	if ( modulo == 0 ) modulo = poolSize;
         	for ( int j = 0; j < modulo; j++)
         	{
         		auxQueue.push(jobs.pollLast());
