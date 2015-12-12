@@ -137,7 +137,7 @@ public class Slave {
 				int solutions = 0;
 				for ( Cube currentCube : currentCubes)
 				{
-					if ( currentCube.getTwists() > 2){
+					if ( currentCube.getTwists() > 1){
 						this.results.add(this.executor.submit(new solverThread(currentCube)));
 					}
 					else {
