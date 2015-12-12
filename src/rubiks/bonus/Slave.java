@@ -12,7 +12,6 @@ import ibis.ipl.*;
  * A slave able to execute some cubes in order to find a solution.
  */
 public class Slave {
-	static final int MIN_THREADS = 18;
 	/*
 	 * Ibis global parameters.
 	 */
@@ -136,14 +135,9 @@ public class Slave {
 				 * If there is a new job, create threads.
 				 */
 				int solutions = 0;
-				/*
-				 * If there are too few cubes, create some other.
-				 */
-				boolean increase = false;
-				if ( currentCubes.length < MIN_THREADS) increase = true;
 				for ( Cube currentCube : currentCubes)
 				{
-					if ( ! increase){
+					if ( currentCube.getTwists() != 1){
 						this.results.add(this.executor.submit(new solverThread(currentCube)));
 					}
 					else {

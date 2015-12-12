@@ -17,7 +17,6 @@ import ibis.ipl.*;
  * The master creates new jobs, and distributes them in a balanced way among the slaves.
  */
 public class Master{
-	static final int MIN_THREADS = 18;
 	/*
 	 * The INITIAL_TWISTS specify how many different sizes of cubes there will
 	 * be in the initial work queue for each bound.
@@ -188,23 +187,19 @@ public class Master{
              * Distribute Jobs
              */
             distributeJobs();
-            /*
-             * Solve.
-             */
-            boolean increase = false;
-            if ( jobs.size() < MIN_THREADS ) increase = true;
             while ( !jobs.isEmpty() )
             {
+            	Cube c = jobs.pop();
             	/*
             	 * Solve your jobs.
             	 */
-            	if ( ! increase ) {
-            		this.results.add(this.executor.submit(new solverThread(jobs.pop())));
+            	if ( c.getTwists() != 1 ) {
+            		this.results.add(this.executor.submit(new solverThread(c)));
             	}
             	else {
-					for ( Cube c : jobs.pop().generateChildren(cache))
+					for ( Cube cc : c.generateChildren(cache))
 					{
-						this.results.add(this.executor.submit(new solverThread(c)));
+						this.results.add(this.executor.submit(new solverThread(cc)));
 					}
 				}
             }
