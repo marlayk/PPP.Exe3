@@ -136,7 +136,18 @@ public class Master{
 	private void Solve() {
 		
 		System.out.print("Bound now:");
-		
+		/*
+		 * The cube is already solved.
+		 * In this case the sequential version says that the cube is solvable in 1 way with one step.
+		 * I'm not sure if this is a bug of something, but I'll do the same.
+		 */
+		if ( cube.isSolved() )
+		{
+			this.solutions = 1;
+			this.bound = 1;
+            System.out.print(" 1");
+            return;
+		}
 		while ( this.solutions == 0 )
 		{
 			/*
