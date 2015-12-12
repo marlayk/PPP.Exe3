@@ -12,7 +12,7 @@ import ibis.ipl.*;
  * A slave able to execute some cubes in order to find a solution.
  */
 public class Slave {
-	static final int MIN_THREADS = 16;
+	static final int MIN_THREADS = 18;
 	/*
 	 * Ibis global parameters.
 	 */

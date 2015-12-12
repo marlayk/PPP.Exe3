@@ -17,7 +17,7 @@ import ibis.ipl.*;
  * The master creates new jobs, and distributes them in a balanced way among the slaves.
  */
 public class Master{
-	static final int MIN_THREADS = 16;
+	static final int MIN_THREADS = 18;
 	/*
 	 * The INITIAL_TWISTS specify how many different sizes of cubes there will
 	 * be in the initial work queue for each bound.
