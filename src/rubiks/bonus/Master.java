@@ -17,6 +17,7 @@ import ibis.ipl.*;
  * The master creates new jobs, and distributes them in a balanced way among the slaves.
  */
 public class Master{
+	static final int MIN_THREADS = 8;
 	/*
 	 * The INITIAL_TWISTS specify how many different sizes of cubes there will
 	 * be in the initial work queue for each bound.
@@ -133,7 +134,7 @@ public class Master{
 		 */
 		System.err.println("Solving cube took " + (end - start) + " milliseconds");
 		/*
-		 * Quit the pool.
+		 * Quit the pool
 		 */
 		this.executor.shutdown();
 		/*
@@ -190,12 +191,22 @@ public class Master{
             /*
              * Solve.
              */
+            boolean increase = false;
+            if ( jobs.size() < MIN_THREADS ) increase = true;
             while ( !jobs.isEmpty() )
             {
             	/*
             	 * Solve your jobs.
             	 */
-            	this.results.add(this.executor.submit(new solverThread(jobs.pop())));
+            	if ( ! increase ) {
+            		this.results.add(this.executor.submit(new solverThread(jobs.pop())));
+            	}
+            	else {
+					for ( Cube c : jobs.pop().generateChildren(cache))
+					{
+						this.results.add(this.executor.submit(new solverThread(c)));
+					}
+				}
             }
 			/*
 			 * Read results.
@@ -371,10 +382,14 @@ public class Master{
         for(int i = 0; i <  Math.min(initial_twists, this.bound); i++)
         {
         	/*
-        	 * If could be distributed, create some other smaller jobs, in order to increase performance gain
-        	 * with threads.
+        	 * If the jobs can be distributed in balanced way, stop.
         	 */
-        	for ( int j = 0; j < jobs.size(); j++)
+        	if ( jobs.size() % poolSize == 0) break;
+        	/*
+        	 * Make another step in jobs that can't be distributed in balanced way.
+        	 */
+        	int modulo = jobs.size() % poolSize;
+        	for ( int j = 0; j < modulo; j++)
         	{
         		auxQueue.push(jobs.pollLast());
         	}
