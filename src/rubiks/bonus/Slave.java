@@ -170,6 +170,10 @@ public class Slave {
 			}
 		} while ( currentCubes != null);
 		/*
+		 * Close the pool.
+		 */
+		this.executor.shutdown();
+		/*
 		 * Close the sent port.
 		 */
 		try 
