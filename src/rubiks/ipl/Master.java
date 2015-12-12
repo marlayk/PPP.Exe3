@@ -146,6 +146,8 @@ public class Master{
 			this.solutions = 1;
 			this.bound = 1;
             System.out.print(" 1");
+    		System.out.println();
+            System.out.println("Solving cube possible in " + this.solutions + " ways of " + bound + " steps");	
             return;
 		}
 		while ( this.solutions == 0 )
