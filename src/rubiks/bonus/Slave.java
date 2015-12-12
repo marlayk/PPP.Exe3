@@ -23,7 +23,7 @@ public class Slave {
 	 * Thread pool
 	 */
 	ExecutorService executor;
-	Stack<Future<Integer>> results;
+	Queue<Future<Integer>> results;
 	/**
 	 * Creates a new Slave.
 	 * 
@@ -45,7 +45,7 @@ public class Slave {
 		this.masterToSlavePortType = masterToSlave;
 		this.slaveToMasterPortType = slaveToMaster;
 		this.executor = Executors.newCachedThreadPool();
-		this.results = new Stack<Future<Integer>>();
+		this.results = new LinkedList<Future<Integer>>();
 	}
 	
 	public void Run()
@@ -135,7 +135,7 @@ public class Slave {
 				int solutions = 0;
 				for ( Cube currentCube : currentCubes)
 				{
-					this.results.push(this.executor.submit(new solverThread(currentCube)));
+					this.results.add(this.executor.submit(new solverThread(currentCube)));
 				}
 				/*
 				 * Read results.
@@ -143,7 +143,7 @@ public class Slave {
 				while ( !this.results.isEmpty() )
 				{
 					try {
-						solutions += results.pop().get();
+						solutions += results.poll().get();
 					} 
 					catch (InterruptedException e) {
 						System.err.println("Waiting for the results in slave: " + e.getMessage());
