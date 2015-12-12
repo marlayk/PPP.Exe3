@@ -193,7 +193,7 @@ public class Master{
             	/*
             	 * Solve your jobs.
             	 */
-            	if ( c.getTwists() != 1 ) {
+            	if ( c.getTwists() > 1 ) {
             		this.results.add(this.executor.submit(new solverThread(c)));
             	}
             	else {
