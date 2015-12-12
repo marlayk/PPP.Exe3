@@ -371,15 +371,10 @@ public class Master{
         for(int i = 0; i <  Math.min(initial_twists, this.bound); i++)
         {
         	/*
-        	 * If the jobs can be distributed in balanced way, stop.
+        	 * If could be distributed, create some other smaller jobs, in order to increase performance gain
+        	 * with threads.
         	 */
-        	//if ( jobs.size() % poolSize == 0) break;
-        	/*
-        	 * Make another step in jobs that can't be distributed in balanced way.
-        	 */
-        	int modulo = jobs.size() % poolSize;
-        	if ( modulo == 0 ) modulo = poolSize;
-        	for ( int j = 0; j < modulo; j++)
+        	for ( int j = 0; j < jobs.size(); j++)
         	{
         		auxQueue.push(jobs.pollLast());
         	}
