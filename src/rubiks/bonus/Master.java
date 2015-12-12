@@ -2,6 +2,11 @@ package rubiks.bonus;
 
 import java.io.IOException;
 import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import ibis.ipl.*;
 
@@ -35,6 +40,11 @@ public class Master{
 	 * The cache used.
 	 */
 	CubeCache cache;
+	/*
+	 * Thread pool
+	 */
+	ExecutorService executor;
+	Queue<Future<Integer>> results;
 	/*
 	 * Receive and send ports.
 	 */
@@ -88,6 +98,8 @@ public class Master{
 		 * The number of slaves is the size of the pool, minus the master.
 		 */
 		slavesN = myIbis.registry().getPoolSize() - 1;
+		this.executor = Executors.newCachedThreadPool();
+		this.results = new LinkedList<Future<Integer>>();
 	}
 	public void Run()
 	{
@@ -179,8 +191,24 @@ public class Master{
             	/*
             	 * Solve your jobs.
             	 */
-            	this.solutions += solutions(jobs.pop(), cache);
+            	this.results.add(this.executor.submit(new solverThread(jobs.pop())));
             }
+			/*
+			 * Read results.
+			 */
+			while ( !this.results.isEmpty() )
+			{
+				try {
+					solutions += results.poll().get();
+				} 
+				catch (InterruptedException e) {
+					System.err.println("Waiting for the results in slave: " + e.getMessage());
+					return;
+				} catch (ExecutionException e) {
+					System.err.println("Waiting for the results in slave: " + e.getMessage());
+					return;
+				}
+			}
             /*
              * Wait for all the slaves to terminate their jobs.
              */
@@ -205,44 +233,6 @@ public class Master{
 		System.out.println();
         System.out.println("Solving cube possible in " + this.solutions + " ways of " + bound + " steps");	
 	}
-	/**
-     * Recursive function to find a solution for a given cube. Only searches to
-     * the bound set in the cube object.
-     * Some cubes are sent so salves.
-     * 
-     * @param cube
-     *            cube to solve
-     * @param cache
-     *            cache of cubes used for new cube objects
-     * @return the number of solutions found locally.
-     */
-	private static int solutions(Cube cube, CubeCache cache) {
-        if (cube.isSolved()) {
-            return 1;
-        }
-
-        if (cube.getTwists() >= cube.getBound()) {
-            return 0;
-        }
-
-        // generate all possible cubes from this one by twisting it in
-        // every possible way. Gets new objects from the cache
-        Cube[] children = cube.generateChildren(cache);
-
-        int result = 0;
-
-        for (Cube child : children) {
-            // recursion step
-            int childSolutions = solutions(child, cache);
-            if (childSolutions > 0) {
-                result += childSolutions;
-            }
-            // put child object in cache
-            cache.put(child);
-        }
-
-        return result;
-    }
 	/**
 	 * Sends the given cube array to the indicated port.
 	 * 
